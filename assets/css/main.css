@@ -1,0 +1,9 @@
+#wheel-of-fortune {
+    display: inline-block;
+    position: relative;
+    overflow: hidden;
+}
+
+#wheel {
+    display: block;
+}
