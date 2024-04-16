@@ -1,3 +1,10 @@
 {
-  "test": "Тест"
+  "game.selectLetter": "Выберите букву",
+
+  "game.firstRound": "1-й раунд",
+  "game.secondRound": "2-й раунд",
+  "game.thirdRound": "3-й раунд",
+  "game.fourthRound": "4-й раунд",
+
+  "game.superGame": "Супер игра"
 }

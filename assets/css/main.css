@@ -1,7 +1,307 @@
-#wheel-of-fortune {
-    display: inline-block;
-    position: relative;
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+
+:root {
+    --onebeld-color: #f0f0f0;
+    --onebeld-border-color: rgba(69, 84, 67, 0.45);
+    --onebeld-color-secondary: rgba(240, 240, 240, 0.38);
+    --onebeld-background: #172933;
+
+    --onebeld-background-color-hover: rgba(240, 240, 240, 0.09);
+    --onebeld-background-color-active: rgba(240, 240, 240, 0.05);
+
+    --onebeld-color-selected: #c7ffad;
+    --onebeld-color-pressed: #7db464;
+
+    --onebeld-font-family-header: Montserrat, sans-serif;
+    --onebeld-font-family-main: Roboto, sans-serif;
+
+    --onebeld-font-size-header: 24px;
+    --onebeld-font-size-main: 18px;
+
+    --onebeld-border-radius: 8pt;
+    --onebeld-block-background-color: rgba(16, 32, 34, 0.77);
+    --onebeld-block-letter-background-color: rgba(29, 61, 65, 0.77);
+}
+
+body {
+    background-color: var(--onebeld-background);
+    color: var(--onebeld-color);
+    font-family: var(--onebeld-font-family-main);
+    margin: 10px;
+    padding: 0;
+}
+
+.task-container {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 700px;
+    padding: 10px;
+}
+
+.letters-container {
+    width: 525px;
+    height: 250px;
+    position: absolute;
+    margin-top: auto;
+    margin-bottom: auto;
+    margin-left: 10px;
+    padding: 10px;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    #transform: translateX(-100%);
+    transition: transform 300ms ease-in-out;
+}
+
+.players-container {
+    height: 100px;
+    position: absolute;
+    margin-left: auto;
+    margin-right: auto;
+    bottom: 0;
+    right: 0;
+    left: 0;
+}
+
+.card-title {
+    font-size: var(--onebeld-font-size-header);
+    text-align: center;
+}
+
+#task {
+    text-align: center;
+}
+
+#letters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+#word {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.card.letter-card {
+    background-color: var(--onebeld-block-letter-background-color);
+    padding: 10px;
+    font-size: 26px;
+    width: 20px;
+    font-weight: bold;
+    user-select: none;
+}
+
+.card.letter-card.letter-board {
+    width: 15px;
+    font-size: 20px;
+}
+
+.card-container {
+    display: flex;
+    margin-top: 30pt;
+    margin-bottom: 50pt;
+    gap: 10pt;
+    flex-wrap: wrap;
+    justify-content: center;
+    row-gap: 35pt;
+    transition: opacity 500ms linear, transform 500ms ease-out;
+    transform: translateY(30%);
+    opacity: 0;
+}
+
+.card {
     overflow: hidden;
+    background-color: var(--onebeld-block-background-color);
+    backdrop-filter: blur(30px);
+    border-radius: var(--onebeld-border-radius);
+    border: var(--onebeld-border-color) solid 1pt;
+}
+
+h1, h2, h3 {
+    font-family: var(--onebeld-font-family-header);
+}
+
+.onebeld-logo {
+    width: 125pt;
+}
+
+svg.hovered-icon {
+    fill: var(--onebeld-color);
+    transition: fill 100ms linear;
+}
+
+.hovered-icon:hover > svg {
+    fill: var(--onebeld-color-selected);
+}
+.hovered-icon:active > svg {
+    fill: var(--onebeld-color-pressed);
+}
+
+svg.link-icons {
+    width: 20px;
+    height: 20px;
+}
+
+.onebeld-logo > svg {
+    height: auto;
+    fill: var(--onebeld-color);
+}
+
+a {
+    color: var(--onebeld-color);
+    text-decoration: none;
+    transition: color 100ms linear;
+}
+a:hover {
+    color: var(--onebeld-color-selected);
+}
+a:active {
+    color: var(--onebeld-color-pressed);
+}
+
+div.navigation > a {
+    font-family: var(--onebeld-font-family-header);
+    font-size: 12pt;
+}
+
+div.footer-links {
+    display: flex;
+    justify-content: space-evenly;
+    font-size: 10pt;
+}
+
+div.footer-link-container > ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5pt;
+}
+
+div.footer-link-container > h3 {
+    margin: 0 0 10pt;
+}
+
+p.copyright {
+    text-align: center;
+    color: var(--onebeld-color-secondary);
+    font-size: 10pt;
+}
+
+hr.footer-line {
+    border: var(--onebeld-border-color) solid 1pt;
+    border-radius: 100px;
+    margin: 30pt 25pt 0 25pt;
+}
+
+div.menu-links {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 50pt;
+    gap: 15pt;
+}
+div.menu-links > a {
+    font-family: var(--onebeld-font-family-header);
+    font-size: 17pt;
+}
+div.menu-container > .links svg.link-icons {
+    width: 20pt;
+    height: 20pt;
+}
+div.menu-container > .links {
+    gap: 25pt;
+}
+
+/* Icons sizes */
+.material-symbols-rounded.md-18 {
+    font-size: 18px;
+}
+.material-symbols-rounded.md-24 {
+    font-size: 24px;
+}
+.material-symbols-rounded.md-36 {
+    font-size: 36px;
+}
+
+@keyframes moveInCircle {
+    0% {
+        transform: rotate(0deg);
+    }
+    50% {
+        transform: rotate(180deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes moveVertical {
+    0% {
+        transform: translateY(-50%);
+    }
+    50% {
+        transform: translateY(50%);
+    }
+    100% {
+        transform: translateY(-50%);
+    }
+}
+
+@keyframes moveHorizontal {
+    0% {
+        transform: translateX(-50%) translateY(-10%);
+    }
+    50% {
+        transform: translateX(50%) translateY(10%);
+    }
+    100% {
+        transform: translateX(-50%) translateY(-10%);
+    }
+}
+
+
+@media screen and (max-width: 800px) {
+    div.navigation {
+        display: none;
+    }
+    div.links:not(div.menu-container > div.links) {
+        display: none;
+    }
+
+    .menu-container {
+        display: flex;
+    }
+
+    .menu-button {
+        display: flex;
+    }
+}
+
+#wheel-of-fortune {
+    position: absolute;
+    margin: auto;
+    width: 400px;
+    height: 400px;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+
+#wheel-pointer {
+    position: absolute;
+    margin-top: auto;
+    margin-bottom: auto;
+    margin-right: -30px;
+    height: 35px;
+    right: 0;
+    top: 0;
+    bottom: 0;
 }
 
 #wheel {

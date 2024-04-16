@@ -10,8 +10,45 @@
 	<body>
 		<div id="wheel-of-fortune">
 			<canvas id="wheel" width="400" height="400"></canvas>
+			<img id="wheel-pointer" src="assets/images/WheelPointer.png" alt="WheelPointer">
 		</div>
 
-		<script src="scripts/wheel.js"></script>
+		<div class="task-container card">
+			<h1 class="title-tour">1-й тур</h1>
+
+			<div id="word">
+				<div class="card letter-card">
+					<span>О</span>
+				</div>
+				<div class="card letter-card">
+					<span>N</span>
+				</div>
+				<div class="card letter-card">
+					<span>G</span>
+				</div>
+			</div>
+
+			<p id="task">Текст задания</p>
+		</div>
+
+		<div class="letters-container card">
+			<h1 class="card-title" translate="game.selectLetter"></h1>
+
+			<div id="letters"></div>
+		</div>
+
+		<div class="players-container card">
+			<div id="players">
+				<div>
+					<h3 class="player-name">Player 1</h3>
+					<div class="card player-card">
+					</div>
+
+					<p class="player-points">0</p>
+				</div>
+			</div>
+		</div>
+
+		<script type="module" src="scripts/game.js"></script>
 	</body>
 </html>

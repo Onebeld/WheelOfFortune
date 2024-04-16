@@ -1,3 +1,10 @@
 {
-  "test": "Test"
+  "game.selectLetter": "Pick a letter",
+
+  "game.firstRound": "1st round",
+  "game.secondRound": "2nd round",
+  "game.thirdRound": "3rd round",
+  "game.fourthRound": "4th round",
+
+  "game.superGame": "Super game"
 }
