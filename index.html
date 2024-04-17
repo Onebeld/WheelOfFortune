@@ -2,6 +2,7 @@
 <html lang="en">
 	<head>
 		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<title>Wheel Of Fortune</title>
 		<link rel="stylesheet" href="assets/css/main.css">
 
@@ -9,7 +10,7 @@
 	</head>
 	<body>
 		<div id="wheel-of-fortune">
-			<canvas id="wheel" width="400" height="400"></canvas>
+			<canvas id="wheel" width="500" height="500"></canvas>
 			<img id="wheel-pointer" src="assets/images/WheelPointer.png" alt="WheelPointer">
 		</div>
 
@@ -28,7 +29,7 @@
 				</div>
 			</div>
 
-			<p id="task">Текст задания</p>
+			<p id="task"></p>
 		</div>
 
 		<div class="letters-container card">
@@ -37,16 +38,12 @@
 			<div id="letters"></div>
 		</div>
 
-		<div class="players-container card">
-			<div id="players">
-				<div>
-					<h3 class="player-name">Player 1</h3>
-					<div class="card player-card">
-					</div>
+		<div id="players"></div>
 
-					<p class="player-points">0</p>
-				</div>
-			</div>
+		<div class="game-menu card">
+			<h1>Wheel Of Fortune</h1>
+			<button id="start-game-nobots">Начать игру</button>
+			<button id="start-game-bots">Начать игру с ботами</button>
 		</div>
 
 		<script type="module" src="scripts/game.js"></script>

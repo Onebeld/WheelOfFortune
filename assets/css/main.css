@@ -54,23 +54,30 @@ body {
     transition: transform 300ms ease-in-out;
 }
 
-.players-container {
-    height: 100px;
-    position: absolute;
-    margin-left: auto;
-    margin-right: auto;
-    bottom: 0;
-    right: 0;
-    left: 0;
-}
-
 .card-title {
     font-size: var(--onebeld-font-size-header);
     text-align: center;
 }
 
+.player-name {
+    text-align: center;
+    margin: 0 0 10px;
+}
+
+#players {
+    position: absolute;
+    margin-bottom: 10px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
 #task {
     text-align: center;
+    margin: 10px 0 0;
 }
 
 #letters {
@@ -83,6 +90,31 @@ body {
     display: flex;
     justify-content: center;
     gap: 10px;
+}
+
+.game-menu {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: transform 300ms ease-in-out;
+}
+
+.game-menu.hidden {
+    transform: translateY(-100%);
+    pointer-events: none;
+}
+
+.title-tour {
+    text-align: center;
+    margin: 0 0 10px;
+    font-size: 16pt;
 }
 
 .card.letter-card {
@@ -118,6 +150,22 @@ body {
     backdrop-filter: blur(30px);
     border-radius: var(--onebeld-border-radius);
     border: var(--onebeld-border-color) solid 1pt;
+}
+
+.player-card {
+    padding: 10px;
+}
+
+.card.player-image {
+    width: 100px;
+    height: 100px;
+}
+
+.player-points {
+    text-align: center;
+    font-weight: bold;
+    letter-spacing: 3pt;
+    margin: 10px 0 0;
 }
 
 h1, h2, h3 {
@@ -162,11 +210,6 @@ a:active {
     color: var(--onebeld-color-pressed);
 }
 
-div.navigation > a {
-    font-family: var(--onebeld-font-family-header);
-    font-size: 12pt;
-}
-
 div.footer-links {
     display: flex;
     justify-content: space-evenly;
@@ -190,12 +233,6 @@ p.copyright {
     text-align: center;
     color: var(--onebeld-color-secondary);
     font-size: 10pt;
-}
-
-hr.footer-line {
-    border: var(--onebeld-border-color) solid 1pt;
-    border-radius: 100px;
-    margin: 30pt 25pt 0 25pt;
 }
 
 div.menu-links {
@@ -228,65 +265,11 @@ div.menu-container > .links {
     font-size: 36px;
 }
 
-@keyframes moveInCircle {
-    0% {
-        transform: rotate(0deg);
-    }
-    50% {
-        transform: rotate(180deg);
-    }
-    100% {
-        transform: rotate(360deg);
-    }
-}
-
-@keyframes moveVertical {
-    0% {
-        transform: translateY(-50%);
-    }
-    50% {
-        transform: translateY(50%);
-    }
-    100% {
-        transform: translateY(-50%);
-    }
-}
-
-@keyframes moveHorizontal {
-    0% {
-        transform: translateX(-50%) translateY(-10%);
-    }
-    50% {
-        transform: translateX(50%) translateY(10%);
-    }
-    100% {
-        transform: translateX(-50%) translateY(-10%);
-    }
-}
-
-
-@media screen and (max-width: 800px) {
-    div.navigation {
-        display: none;
-    }
-    div.links:not(div.menu-container > div.links) {
-        display: none;
-    }
-
-    .menu-container {
-        display: flex;
-    }
-
-    .menu-button {
-        display: flex;
-    }
-}
-
 #wheel-of-fortune {
     position: absolute;
     margin: auto;
-    width: 400px;
-    height: 400px;
+    width: 500px;
+    height: 500px;
     left: 0;
     right: 0;
     top: 0;
