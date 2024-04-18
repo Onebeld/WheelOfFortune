@@ -50,8 +50,12 @@ body {
     top: 0;
     bottom: 0;
     left: 0;
-    #transform: translateX(-100%);
+    transform: translateX(-100%);
     transition: transform 300ms ease-in-out;
+}
+
+.letters-container.opened {
+    transform: translateX(0);
 }
 
 .card-title {
@@ -92,6 +96,13 @@ body {
     gap: 10px;
 }
 
+#leading {
+    text-align: center;
+    margin: 30px 0 0;
+    font-size: 18px;
+    font-weight: bold;
+}
+
 .game-menu {
     position: absolute;
     top: 0;
@@ -109,12 +120,38 @@ body {
 .game-menu.hidden {
     transform: translateY(-100%);
     pointer-events: none;
+    opacity: 1;
+}
+
+
+.hidden {
+    opacity: 0;
 }
 
 .title-tour {
     text-align: center;
     margin: 0 0 10px;
     font-size: 16pt;
+}
+
+.mark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+    transition: opacity 200ms linear;
+}
+
+.letter {
+    opacity: 1;
+    text-align: center;
+    transition: opacity 500ms linear;
+}
+
+.letter.hidden {
+    opacity: 0;
 }
 
 .card.letter-card {
@@ -127,6 +164,7 @@ body {
 }
 
 .card.letter-card.letter-board {
+    position: relative;
     width: 15px;
     font-size: 20px;
 }
@@ -150,6 +188,14 @@ body {
     backdrop-filter: blur(30px);
     border-radius: var(--onebeld-border-radius);
     border: var(--onebeld-border-color) solid 1pt;
+}
+
+.can-move {
+    filter: drop-shadow(0 0 10px var(--onebeld-color-selected));
+}
+
+.disabled {
+    pointer-events: none;
 }
 
 .player-card {

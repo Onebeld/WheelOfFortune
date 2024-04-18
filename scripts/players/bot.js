@@ -18,15 +18,15 @@ export class Bot extends Player {
         let wordLength = 0;
 
         if (openLetterCount === 0) {
-            this.guessLetter();
+            return this.guessLetter();
         } else if (openLetterCount / wordLength < 0.5) {
             if (Math.random() < 0.1) {
-                this.guessWord();
+                return this.guessWord();
             } else {
-                this.guessLetter();
+                return this.guessLetter();
             }
         } else {
-            this.guessWord();
+            return this.guessWord();
         }
     }
 }

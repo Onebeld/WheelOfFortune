@@ -6,6 +6,7 @@ export class Player {
         this.points = 0;
 
         this.loses = false;
+        this.canMove = false;
 
         this.element = HtmlTemplates.getPlayerElement();
     }

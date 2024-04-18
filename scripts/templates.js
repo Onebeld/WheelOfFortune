@@ -1,6 +1,13 @@
 export class HtmlTemplates {
     static {}
 
+    /**
+     * Creates an HTML element from the given HTML string.
+     *
+     * @param {string} html - The HTML string to convert into an element.
+     * @param {boolean} [trim=true] - Whether to trim whitespace from the HTML string.
+     * @return {HTMLElement|NodeList} The created HTML element or a NodeList of created elements.
+     */
     static createElementFromHTML(html, trim = true) {
         html = trim ? html.trim() : html;
         if (!html) return null;
@@ -13,6 +20,11 @@ export class HtmlTemplates {
         return result;
     }
 
+    /**
+     * Generates the HTML element for a player in the game.
+     *
+     * @return {HTMLElement} The player element.
+     */
     static getPlayerElement() {
         const template = `
             <div class="card player-card">
@@ -29,9 +41,14 @@ export class HtmlTemplates {
         return this.createElementFromHTML(template);
     }
 
+    /**
+     * Generates the HTML element for a word letter card.
+     *
+     * @return {HTMLElement} The created HTML element.
+     */
     static getWordLetterElement() {
         const template = `
-            <div class="card letter-card letter-board">
+            <div class="card letter-card">
                 <span class="letter hidden"></span>
             </div>
         `;
@@ -39,10 +56,19 @@ export class HtmlTemplates {
         return this.createElementFromHTML(template);
     }
 
+    /**
+     * Generates the HTML element for a letter card.
+     *
+     * @return {HTMLElement} The created HTML element.
+     */
     static getLetterElement() {
         const template = `
             <div class="card letter-card letter-board">
                 <span class="letter"></span>
+                
+                <svg class="mark hidden" height="30" width="30" xmlns="http://www.w3.org/2000/svg">
+                    <circle r="13" cx="15" cy="15" stroke="red" stroke-width="3" fill-opacity="0" />
+                </svg>
             </div>
         `;
 

@@ -4,7 +4,14 @@
   "game.firstRound": "1-й раунд",
   "game.secondRound": "2-й раунд",
   "game.thirdRound": "3-й раунд",
-  "game.fourthRound": "4-й раунд",
+  "game.final": "Финал",
 
-  "game.superGame": "Супер игра"
+  "game.superGame": "Супер игра",
+
+  "game.leading.points": "очков, буква?",
+  "game.leading.spinWheel": ", вращайте барабан",
+  "game.leading.noLetter": "Такой буквы здесь нет!",
+  "game.leading.openLetter": "Открыть букву ",
+  "game.leading.bankrupt": "Вы банкрот!",
+  "game.leading.zero": "У вас ноль!"
 }
