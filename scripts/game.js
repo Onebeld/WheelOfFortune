@@ -1,7 +1,7 @@
 import {wheel} from "./wheel.js";
 import {Letters} from "./letters.js";
 import {HtmlTemplates} from "./templates.js";
-import {tasks, loadTasks} from "./task-manager.js";
+import {tasks} from "./task-manager.js";
 
 import {Player} from "./players/player.js";
 import {Bot} from "./players/bot.js";
@@ -146,6 +146,8 @@ function createWordLetters() {
         const observer = new Proxy(wordLetter, {
             set(target, prop, value) {
                 if (prop === "isOpened") {
+                    target.isOpened = value;
+
                     if (value)
                         spanLetter.classList.remove("hidden");
                     else
@@ -202,7 +204,7 @@ function createPlayer(player) {
         }
     });
 
-    players.push( observer );
+    players.push(observer);
 
     playerBoard.appendChild(player.element);
 }
@@ -230,14 +232,25 @@ function setTextRound() {
 
 function createPlayerBoard() {
     if (currentGameMode === GameMode.NO_BOTS) {
+        if (currentRound === Round.FINAL) {
+            for (const winningPlayer of winningPlayers) {
+                players.push(winningPlayer);
+                playerBoard.appendChild(winningPlayer.element);
+            }
+
+            winningPlayers = [];
+
+            return;
+        }
+
         for (let i = 0; i < maxPlayers; i++) {
-            createPlayer(new Player(`Player ${i + 1}`));
+            createPlayer(new Player(""));
         }
     } else if (currentGameMode === GameMode.WITH_BOTS) {
         createPlayer(new Player(`Player 1`));
 
         for (let i = 1; i < maxPlayers; i++) {
-            createPlayer(new Bot(`Bot ${i + 1}`));
+            createPlayer(new Bot(""));
         }
     }
 }
@@ -260,13 +273,19 @@ async function selectLetterPlusSector(letter) {
         }
     }
 
+    letterBlocks.find(letterBlock => letterBlock.observer.letter === letter).observer.isSelected = true;
+
     if (wordLetterElements.every(wordElement => wordElement.observer.isOpened)) {
         // TODO: Winning
         winningPlayers.push(player);
-        nextRound();
+        await nextRound();
+
+        return;
     }
 
     currentSector = "";
+
+    typeLeadingText(translateString(`${players[currentPlayer].name}{{game.leading.spinWheel}}`))
 
     canTurnWheel = true;
     turnWheel();
@@ -316,7 +335,7 @@ function selectLetter(letter) {
         if (wordLetterElements.every(wordElement => wordElement.observer.isOpened)) {
             // TODO: Winning
             winningPlayers.push(player);
-            nextRound();
+            await nextRound();
 
             return;
         }
@@ -354,16 +373,13 @@ function turnWheel() {
 }
 
 async function nextMove() {
-    if (currentPlayer >= 0) {
+    if (currentPlayer >= 0)
         players[currentPlayer].canMove = false;
-    }
 
-    if (currentPlayer >= players.length - 1) {
+    if (currentPlayer >= players.length - 1)
         currentPlayer = 0;
-    }
-    else {
+    else
         currentPlayer++;
-    }
 
     players[currentPlayer].canMove = true;
 
@@ -394,6 +410,8 @@ function selectTasks() {
 }
 
 function typeTask() {
+    taskElement.textContent = "";
+
     let index = 0;
 
     function type() {
@@ -414,6 +432,12 @@ function selectWord() {
 }
 
 async function nextRound() {
+    typeLeadingText(translateString(`{{game.leading.winning}} ${players[currentPlayer].name}{{game.leading.nextRound}}`));
+
+    await sleep(3000);
+
+    players[currentPlayer].canMove = false;
+
     clearGame();
 
     if (currentGameMode === GameMode.NO_BOTS) {
@@ -472,15 +496,20 @@ async function startGame(gameMode) {
     await nextMove();
 }
 
+function removeAllChildrenFromElement(element) {
+    while (element.firstChild)
+        element.removeChild(element.firstChild);
+}
+
 function clearGame() {
     players = [];
     letterBlocks = [];
     wordLetterElements = [];
     currentPlayer = -1;
 
-    playerBoard.clear();
-    letterBoard.clear();
-    word.clear();
+    removeAllChildrenFromElement(playerBoard);
+    removeAllChildrenFromElement(letterBoard);
+    removeAllChildrenFromElement(word);
 }
 
 async function eventRotatedWheel(index, sector) {
@@ -503,6 +532,10 @@ async function eventRotatedWheel(index, sector) {
 
             break;
         case "+":
+            typeLeadingText(translateString("{{game.leading.plus}}"))
+            break;
+        case "П":
+            typeLeadingText(translateString("{{game.leading.prize}}"))
             break;
 
         default:
@@ -527,11 +560,7 @@ startGameBots.addEventListener("click", async () => {
 });
 
 startGameNobots.addEventListener("click", async () => {
-    startGame(GameMode.NO_BOTS);
+    await startGame(GameMode.NO_BOTS);
 
     gameMenu.classList.add("hidden");
 });
-
-(async function init() {
-    await loadTasks();
-})()

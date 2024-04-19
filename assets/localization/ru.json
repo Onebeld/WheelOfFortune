@@ -13,5 +13,9 @@
   "game.leading.noLetter": "Такой буквы здесь нет!",
   "game.leading.openLetter": "Открыть букву ",
   "game.leading.bankrupt": "Вы банкрот!",
-  "game.leading.zero": "У вас ноль!"
+  "game.leading.zero": "У вас ноль!",
+  "game.leading.plus": "Сектор Плюс! Вы можете открыть любую букву в слове!",
+  "game.leading.winning": "Перед нами победитель!",
+  "game.leading.nextRound": ", вы можете перейти в финал!",
+  "game.leading.prize": "Сектор Приз! Откройте одну из двух шкатулок"
 }

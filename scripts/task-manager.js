@@ -13,11 +13,6 @@ async function fetchTasks(locale) {
     return await response.json();
 }
 
-/**
- * Asynchronously loads tasks for a specific locale.
- *
- * @return {Promise<void>} A promise that resolves when the tasks are loaded.
- */
-export async function loadTasks() {
+(async function init() {
     tasks = await fetchTasks(locale);
-}
+})()
