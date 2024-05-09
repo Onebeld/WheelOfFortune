@@ -15,6 +15,8 @@
 		</div>
 
 		<div class="task-container card">
+			<button id="name-word-button" translate="game.nameWord"></button>
+
 			<h1 class="title-tour"></h1>
 
 			<div id="word"></div>
@@ -32,10 +34,19 @@
 
 		<div id="players"></div>
 
+		<div id="word-window" class="card window closed">
+			<button id="input-close-button">Close</button>
+
+			<h2 id="input-word-title">Введите слово</h2>
+			<div id="word-inputs"></div>
+
+			<button id="input-answer-button">Дать ответ</button>
+		</div>
+
 		<div class="game-menu card">
 			<h1>Wheel Of Fortune</h1>
-			<button id="start-game-nobots">Начать игру</button>
-			<button id="start-game-bots">Начать игру с ботами</button>
+			<button id="start-game-nobots" translate="game.start"></button>
+			<button id="start-game-bots" translate="game.startWithBots"></button>
 		</div>
 
 		<script type="module" src="scripts/game.js"></script>

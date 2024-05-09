@@ -1,5 +1,10 @@
 {
+  "game.start": "Начать игру",
+  "game.startWithBots": "Начать игру с ботами",
+
   "game.selectLetter": "Выберите букву",
+  "game.nameWord": "Назвать слово",
+  "game.name": "Назвать",
 
   "game.firstRound": "1-й раунд",
   "game.secondRound": "2-й раунд",
@@ -17,5 +22,9 @@
   "game.leading.plus": "Сектор Плюс! Вы можете открыть любую букву в слове!",
   "game.leading.winning": "Перед нами победитель!",
   "game.leading.nextRound": ", вы можете перейти в финал!",
-  "game.leading.prize": "Сектор Приз! Откройте одну из двух шкатулок"
+  "game.leading.prize": "Сектор Приз! Откройте одну из двух шкатулок",
+  "game.leading.superGame": "Вот задание на супер игру",
+  "game.leading.anyLetter": "Разрешаю Вам открыть буквы любые ",
+
+  "game.leading.wrongWord": "К сожалению, неверное слово. Вы выбываете из игры!"
 }

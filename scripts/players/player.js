@@ -2,11 +2,13 @@ import {HtmlTemplates} from "../templates.js";
 import {generateName} from "../name-generator.js";
 
 export class Player {
-    constructor(name) {
+    constructor(name, number) {
         if (name === "")
             this.name = generateName();
         else
             this.name = name;
+
+        this.number = number;
 
         this.points = 0;
 

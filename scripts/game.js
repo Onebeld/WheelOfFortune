@@ -2,9 +2,13 @@ import {wheel} from "./wheel.js";
 import {Letters} from "./letters.js";
 import {HtmlTemplates} from "./templates.js";
 import {tasks} from "./task-manager.js";
+import {Task} from "./elements/task.js";
 
 import {Player} from "./players/player.js";
 import {Bot} from "./players/bot.js";
+import {sleep} from "./general.js";
+import {Global} from "./general.js";
+import {InputWordWindow} from "./windows/input-word-window.js";
 
 const GameMode = { NO_BOTS: "no_bots", WITH_BOTS: "with_bots" };
 const Round = {
@@ -16,19 +20,10 @@ const Round = {
     SUPER_GAME: 5
 };
 
-const typingSpeed = 25;
-
 class Letter {
     constructor(letter) {
         this.letter = letter;
         this.isSelected = false;
-    }
-}
-
-class WordLetter {
-    constructor(letter) {
-        this.letter = letter;
-        this.isOpened = false;
     }
 }
 
@@ -40,13 +35,14 @@ else
     letters = Letters.EN;
 
 const letterBoard = document.querySelector("#letters");
-const word = document.querySelector("#word");
 const lettersContainer = document.querySelector(".letters-container");
 const playerBoard = document.querySelector("#players");
-const titleTourElement = document.querySelector(".title-tour");
-const taskElement = document.querySelector("#task");
 const wheelOfFortune = document.querySelector("#wheel-of-fortune");
-const leading = document.querySelector("#leading");
+const taskContainer = document.querySelector(".task-container");
+
+const wordWindow = document.querySelector("#word-window");
+
+const nameWordButton = document.querySelector("#name-word-button");
 
 const gameMenu = document.querySelector(".game-menu");
 const startGameNobots = document.querySelector("#start-game-nobots");
@@ -54,42 +50,35 @@ const startGameBots = document.querySelector("#start-game-bots");
 
 const maxPlayers = 3;
 
+const task = new Task(taskContainer);
+
 let letterBlocks = [];
 let wordLetterElements = [];
 let players = [];
 
 let winningPlayers = [];
 let currentTasks = [];
-let taskIndex = -1;
-let roundTask;
 
 let canTurnWheel = false;
 let currentGameMode = GameMode.NO_BOTS;
-let currentRound;
 
 let currentPoints = 0;
 let currentSector;
 
-let currentPlayer = -1;
+let numberOfPlayers = 1;
 
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+function openWindow(window) {
+    window.classList.remove("closed");
+
+    canTurnWheel = false;
+    turnWheel();
 }
 
-function typeLeadingText(text) {
-    leading.textContent = "";
+function closeWindow(window) {
+    window.classList.add("closed");
 
-    let index = 0;
-
-    function type() {
-        if (index < text.length) {
-            leading.textContent += text[index];
-            index++;
-            setTimeout(type, typingSpeed);
-        }
-    }
-
-    type();
+    canTurnWheel = true;
+    turnWheel();
 }
 
 function createLetterBoard() {
@@ -134,50 +123,14 @@ function createLetterBoard() {
     }
 }
 
-function createWordLetters() {
-    for (let i = 0; i < roundTask.word.length; i++) {
-        const wordLetter = new WordLetter(roundTask.word[i].toUpperCase());
-
-        const wordLetterElement = HtmlTemplates.getWordLetterElement();
-        const spanLetter = wordLetterElement.querySelector("span.letter");
-
-        spanLetter.textContent = wordLetter.letter;
-
-        const observer = new Proxy(wordLetter, {
-            set(target, prop, value) {
-                if (prop === "isOpened") {
-                    target.isOpened = value;
-
-                    if (value)
-                        spanLetter.classList.remove("hidden");
-                    else
-                        spanLetter.classList.add("hidden");
-
-                    return true;
-                }
-
-                return false;
-            }
-        });
-
-        wordLetterElement.addEventListener("click", async () => {
-            if (currentSector !== "+") return;
-
-            await selectLetterPlusSector(wordLetter.letter);
-        });
-
-        wordLetterElements.push( { wordLetterElement, observer } );
-
-        word.appendChild(wordLetterElement);
-    }
-}
-
 function createPlayer(player) {
     const playerName = player.element.querySelector(".player-name");
     const playerPoints = player.element.querySelector(".player-points");
+    const playerNumber = player.element.querySelector(".player-number");
 
     playerName.textContent = player.name;
     playerPoints.textContent = player.points.toString().padStart(5, "0");
+    playerNumber.textContent = player.number;
 
     const observer = new Proxy(player, {
         set(target, prop, value) {
@@ -200,6 +153,18 @@ function createPlayer(player) {
                 return true;
             }
 
+            if (prop === "loses") {
+                target.loses = value;
+
+                if (value) {
+                    player.element.classList.add("loses");
+                } else {
+                    player.element.classList.remove("loses");
+                }
+
+                return true;
+            }
+
             return false;
         }
     });
@@ -209,30 +174,9 @@ function createPlayer(player) {
     playerBoard.appendChild(player.element);
 }
 
-function setTextRound() {
-    switch (currentRound) {
-        case Round.FIRST:
-            titleTourElement.textContent = translateString("{{game.firstRound}}");
-            break;
-        case Round.SECOND:
-            titleTourElement.textContent = translateString("{{game.secondRound}}");
-            break;
-        case Round.THIRD:
-            titleTourElement.textContent = translateString("{{game.thirdRound}}");
-            break;
-        case Round.FINAL:
-            titleTourElement.textContent = translateString("{{game.final}}");
-            break;
-
-        case Round.SUPER_GAME:
-            titleTourElement.textContent = translateString("{{game.superGame}}");
-            break;
-    }
-}
-
 function createPlayerBoard() {
     if (currentGameMode === GameMode.NO_BOTS) {
-        if (currentRound === Round.FINAL) {
+        if (Global.currentRound === Round.FINAL) {
             for (const winningPlayer of winningPlayers) {
                 players.push(winningPlayer);
                 playerBoard.appendChild(winningPlayer.element);
@@ -244,63 +188,28 @@ function createPlayerBoard() {
         }
 
         for (let i = 0; i < maxPlayers; i++) {
-            createPlayer(new Player(""));
+            createPlayer(new Player("", numberOfPlayers++));
         }
     } else if (currentGameMode === GameMode.WITH_BOTS) {
-        createPlayer(new Player(`Player 1`));
+        createPlayer(new Player(`Player 1`, numberOfPlayers++));
 
         for (let i = 1; i < maxPlayers; i++) {
-            createPlayer(new Bot(""));
+            createPlayer(new Bot("", numberOfPlayers++));
         }
     }
-}
-
-async function selectLetterPlusSector(letter) {
-    const player = players[currentPlayer];
-
-    for (const wordLetterElement of wordLetterElements) {
-        if (wordLetterElement.observer.letter === letter) {
-            wordLetterElement.observer.isOpened = true;
-
-            if (currentSector === "x2") {
-                player.points *= 2;
-            }
-            else {
-                player.points += currentPoints;
-            }
-
-            await sleep(400);
-        }
-    }
-
-    letterBlocks.find(letterBlock => letterBlock.observer.letter === letter).observer.isSelected = true;
-
-    if (wordLetterElements.every(wordElement => wordElement.observer.isOpened)) {
-        // TODO: Winning
-        winningPlayers.push(player);
-        await nextRound();
-
-        return;
-    }
-
-    currentSector = "";
-
-    typeLeadingText(translateString(`${players[currentPlayer].name}{{game.leading.spinWheel}}`))
-
-    canTurnWheel = true;
-    turnWheel();
 }
 
 function selectLetter(letter) {
     lettersContainer.classList.remove("opened");
 
-    const player = players[currentPlayer];
+    const player = players[Global.currentPlayer];
 
     setTimeout(async () => {
         let hasLetter = false;
 
-        if (wordLetterElements.some(wordElement => wordElement.observer.letter === letter)) {
-            typeLeadingText(translateString(`{{game.leading.openLetter}}${letter}!`));
+        if (task.wordLetterElements.some(wordElement => wordElement.observer.letter === letter)) {
+            await task.typeLeadingText(`{{game.leading.openLetter}}${letter}!`);
+
             await sleep(1000);
         }
 
@@ -322,7 +231,8 @@ function selectLetter(letter) {
 
         if (!hasLetter) {
             // TODO: Message about wrong letter
-            typeLeadingText(translateString("{{game.leading.noLetter}}"));
+            await task.typeLeadingText("{{game.leading.noLetter}}");
+
             await sleep(1500);
 
             await nextMove();
@@ -340,11 +250,20 @@ function selectLetter(letter) {
             return;
         }
 
-        typeLeadingText(translateString(`${players[currentPlayer].name}{{game.leading.spinWheel}}`));
+        await task.typeLeadingText(`${players[Global.currentPlayer].name}{{game.leading.spinWheel}}`);
 
         canTurnWheel = true;
         turnWheel();
     }, 500);
+}
+
+async function sayWord(word) {
+    if (task.currentTask.word !== word) {
+        await task.typeLeadingText(`{{game.leading.wrongWord}}`);
+        await sleep(500);
+
+        players[Global.currentPlayer].loses = true;
+    }
 }
 
 async function beginSelectingLetter(player, points) {
@@ -373,19 +292,21 @@ function turnWheel() {
 }
 
 async function nextMove() {
-    if (currentPlayer >= 0)
-        players[currentPlayer].canMove = false;
+    if (Global.currentPlayer >= 0)
+        players[Global.currentPlayer].canMove = false;
 
-    if (currentPlayer >= players.length - 1)
-        currentPlayer = 0;
-    else
-        currentPlayer++;
+    do {
+        if (Global.currentPlayer >= players.length - 1)
+            Global.currentPlayer = 0;
+        else
+            Global.currentPlayer++;
+    } while (players[Global.currentPlayer].loses);
 
-    players[currentPlayer].canMove = true;
+    players[Global.currentPlayer].canMove = true;
 
-    typeLeadingText(translateString(`${players[currentPlayer].name}{{game.leading.spinWheel}}`));
+    task.typeLeadingText(`${players[Global.currentPlayer].name}{{game.leading.spinWheel}}`);
 
-    if (typeof players[currentPlayer] !== Bot) {
+    if (typeof players[Global.currentPlayer] !== Bot) {
         canTurnWheel = true;
         turnWheel();
     }
@@ -409,90 +330,75 @@ function selectTasks() {
     currentTasks = taskIndexes.map(index => tasks[index]);
 }
 
-function typeTask() {
-    taskElement.textContent = "";
-
-    let index = 0;
-
-    function type() {
-        if (index < roundTask.task.length) {
-            taskElement.textContent += roundTask.task[index];
-            index++;
-            setTimeout(type, typingSpeed);
-        }
-    }
-
-    type();
-}
-
-function selectWord() {
-    taskIndex++;
-
-    roundTask = currentTasks[taskIndex];
-}
-
 async function nextRound() {
-    typeLeadingText(translateString(`{{game.leading.winning}} ${players[currentPlayer].name}{{game.leading.nextRound}}`));
+    const player = players[Global.currentPlayer];
 
-    await sleep(3000);
+    if (Global.currentRound === Round.FINAL)
+        await task.typeLeadingText(`{{game.leading.winning}}`);
+    else
+        await task.typeLeadingText(`{{game.leading.winning}} ${player.name}{{game.leading.nextRound}}`);
 
-    players[currentPlayer].canMove = false;
+    await sleep(2000);
+
+    player.canMove = false;
 
     clearGame();
 
     if (currentGameMode === GameMode.NO_BOTS) {
-        switch (currentRound) {
+        switch (Global.currentRound) {
             case Round.FIRST:
             case Round.SECOND:
             case Round.THIRD:
-                currentRound++;
+                Global.currentRound++;
                 break;
 
             case Round.FINAL:
-                currentRound = Round.SUPER_GAME;
+                Global.currentRound = Round.SUPER_GAME;
                 break;
         }
     }
     else {
-        switch (currentRound) {
+        switch (Global.currentRound) {
             case Round.FIRST:
-                currentRound = Round.FINAL;
+                Global.currentRound = Round.FINAL;
                 break;
             case Round.FINAL:
-                currentRound = Round.SUPER_GAME;
+                Global.currentRound = Round.SUPER_GAME;
                 break;
         }
     }
 
-    selectWord();
-
-    setTextRound();
+    task.nextRound();
 
     createLetterBoard();
     createPlayerBoard();
-    createWordLetters();
 
-    setTimeout(typeTask, 500);
-    await nextMove();
+    if (Global.currentRound === Round.SUPER_GAME) {
+        // TODO: Super game
+        await task.typeLeadingText(`{{game.superGame}}!`);
+
+        await sleep(2000);
+
+        await task.typeLeadingText(`{{game.superGame}}!`);
+    }
+    else {
+        setTimeout(() => task.typeTaskText(), 500);
+        await nextMove();
+    }
 
     // TODO: Finish round
 }
 
 async function startGame(gameMode) {
     currentGameMode = gameMode;
+    Global.currentRound = Round.FIRST;
 
-    selectTasks();
-    selectWord();
-
-    currentRound = Round.FIRST;
-
-    setTextRound();
+    task.beginNewGame();
 
     createLetterBoard();
     createPlayerBoard();
-    createWordLetters();
 
-    setTimeout(typeTask, 500);
+    setTimeout(() => task.typeTaskText(), 500);
     await nextMove();
 }
 
@@ -504,20 +410,19 @@ function removeAllChildrenFromElement(element) {
 function clearGame() {
     players = [];
     letterBlocks = [];
-    wordLetterElements = [];
-    currentPlayer = -1;
+    Global.currentPlayer = -1;
 
+    task.clear();
     removeAllChildrenFromElement(playerBoard);
     removeAllChildrenFromElement(letterBoard);
-    removeAllChildrenFromElement(word);
 }
 
 async function eventRotatedWheel(index, sector) {
-    const player = players[currentPlayer];
+    const player = players[Global.currentPlayer];
 
     switch (sector) {
         case "0":
-            typeLeadingText(translateString(`{{game.leading.zero}}`));
+            await task.typeLeadingText(`{{game.leading.zero}}`);
             await sleep(1000);
 
             await nextMove();
@@ -525,26 +430,43 @@ async function eventRotatedWheel(index, sector) {
         case "Б":
             player.points = 0;
 
-            typeLeadingText(translateString(`{{game.leading.bankrupt}}`));
+            await task.typeLeadingText(`{{game.leading.bankrupt}}`);
             await sleep(1000);
 
             await nextMove();
 
             break;
         case "+":
-            typeLeadingText(translateString("{{game.leading.plus}}"))
+            await task.typeLeadingText(`{{game.leading.plus}}`);
+
             break;
         case "П":
-            typeLeadingText(translateString("{{game.leading.prize}}"))
+            await task.typeLeadingText(`{{game.leading.prize}}`);
             break;
 
         default:
-            typeLeadingText(translateString(`${sector} {{game.leading.points}}`));
+            task.typeLeadingText(`${sector} {{game.leading.points}}`);
             await beginSelectingLetter(player, parseInt(sector));
 
             break;
     }
 }
+
+nameWordButton.addEventListener("click", async () => {
+    const inputWordWindow = new InputWordWindow(wordWindow, task.currentTask.word);
+    openWindow(wordWindow);
+
+    inputWordWindow.closeButton.addEventListener("click", () => {
+        closeWindow(wordWindow);
+    });
+
+    inputWordWindow.answerButton.addEventListener("click", async () => {
+        closeWindow(wordWindow);
+
+        await sleep(300);
+        sayWord(inputWordWindow.getWord());
+    });
+})
 
 wheel.addEventListener("rotated", async (event) => {
     const index = event.detail.index;

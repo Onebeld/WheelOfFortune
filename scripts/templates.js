@@ -32,6 +32,10 @@ export class HtmlTemplates {
                 
                 <div class="card player-image">
                     <img src="assets/images/Player.png" width="100px" height="100px" alt="Player">
+                    
+                    <div class="player-number-container">
+                        <span class="player-number"></span>
+                    </div>
                 </div>
                 
                 <p class="player-points">00000</p>
@@ -51,6 +55,14 @@ export class HtmlTemplates {
             <div class="card letter-card">
                 <span class="letter hidden"></span>
             </div>
+        `;
+
+        return this.createElementFromHTML(template);
+    }
+
+    static getInputLetterElement() {
+        const template = `
+            <input class="card letter-card input-word-letter" type="text" maxlength="1">
         `;
 
         return this.createElementFromHTML(template);

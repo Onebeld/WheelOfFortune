@@ -63,21 +63,7 @@ body {
     text-align: center;
 }
 
-.player-name {
-    text-align: center;
-    margin: 0 0 10px;
-}
 
-#players {
-    position: absolute;
-    margin-bottom: 10px;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-}
 
 #task {
     text-align: center;
@@ -144,31 +130,6 @@ body {
     transition: opacity 200ms linear;
 }
 
-.letter {
-    opacity: 1;
-    text-align: center;
-    transition: opacity 500ms linear;
-}
-
-.letter.hidden {
-    opacity: 0;
-}
-
-.card.letter-card {
-    background-color: var(--onebeld-block-letter-background-color);
-    padding: 10px;
-    font-size: 26px;
-    width: 20px;
-    font-weight: bold;
-    user-select: none;
-}
-
-.card.letter-card.letter-board {
-    position: relative;
-    width: 15px;
-    font-size: 20px;
-}
-
 .card-container {
     display: flex;
     margin-top: 30pt;
@@ -194,8 +155,149 @@ body {
     filter: drop-shadow(0 0 10px var(--onebeld-color-selected));
 }
 
+.loses {
+    opacity: 0.5;
+}
+
 .disabled {
     pointer-events: none;
+}
+
+#name-word-button {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin: 10px;
+}
+
+/* ############# Windows ############# */
+
+.window {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+    pointer-events: all;
+    width: 650px;
+    height: 250px;
+    opacity: 1;
+    transform: scale(1);
+    transition: opacity 100ms ease-out, transform 100ms ease-out;
+}
+
+.window.closed {
+    pointer-events: none;
+    opacity: 0;
+    transform: scale(1.2);
+}
+
+input.input-word-letter {
+    color: var(--onebeld-color);
+    text-transform: uppercase;
+    transition: filter 100ms ease-out;
+    outline: none;
+    padding: 0;
+    width: 42px;
+    height: 54px;
+    text-align: center;
+}
+
+input.input-word-letter:focus {
+    border: none;
+    filter: drop-shadow(0 0 5px var(--onebeld-color-selected));
+}
+
+#input-close-button {
+    position: absolute;
+    /* Center */
+    top: 5px;
+    right: 5px;
+}
+
+#input-word-title{
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+}
+
+#word-inputs {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    justify-self: center;
+    align-self: center;
+    display: flex;
+    gap: 10px;
+}
+
+#input-answer-button {
+    position: absolute;
+    bottom: 35px;
+    left: 0;
+    right: 0;
+    justify-self: center;
+}
+
+/* ########################## */
+
+/* ############# Letter ############# */
+
+.letter {
+    opacity: 1;
+    text-align: center;
+    transition: opacity 500ms linear;
+}
+
+.letter.hidden {
+    opacity: 0;
+}
+
+.letter-card {
+    background-color: var(--onebeld-block-letter-background-color);
+    padding: 10px;
+    font-size: 26px;
+    width: 20px;
+    font-weight: bold;
+    user-select: none;
+}
+
+.letter-card.letter-board {
+    position: relative;
+    width: 15px;
+    font-size: 20px;
+}
+
+/* ########################## */
+
+/* ############# Player ############# */
+
+#players {
+    position: absolute;
+    margin-bottom: 10px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.player-points {
+    text-align: center;
+    font-weight: bold;
+    letter-spacing: 3pt;
+    margin: 10px 0 0;
+}
+
+.player-name {
+    text-align: center;
+    margin: 0 0 10px;
 }
 
 .player-card {
@@ -207,12 +309,29 @@ body {
     height: 100px;
 }
 
-.player-points {
+.player-number-container {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: rgba(0, 0, 0, 0.58);
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    margin: 5px;
+}
+
+.player-number {
+    display: block;
+    font-size: 12px;
+    color: white;
     text-align: center;
     font-weight: bold;
-    letter-spacing: 3pt;
-    margin: 10px 0 0;
+
+    /* Vertical center */
+    line-height: 20px;
 }
+
+/* ########################## */
 
 h1, h2, h3 {
     font-family: var(--onebeld-font-family-header);
