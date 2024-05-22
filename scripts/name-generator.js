@@ -1,3 +1,5 @@
+import { localization } from "./localization.js";
+
 const NAMES_PATH = "assets/localization/names/";
 
 export let names = [];
@@ -18,5 +20,5 @@ export function generateName() {
 }
 
 (async function init() {
-    names = await fetchNames(locale);
+    names = await fetchNames(localization.locale);
 })()

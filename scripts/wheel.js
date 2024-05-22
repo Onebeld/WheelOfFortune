@@ -114,21 +114,21 @@ class Wheel extends EventTarget{
         }
     }
 
-/**
- * Handles the click event on the wheel.
- *
- * This function is called when the user clicks on the wheel. It checks if the wheel is already rotating and returns early if it is. Otherwise, it sets the `isRotating` flag to true and generates a random angle within the range of 1000 to 2000.
- *
- * The function then creates an array of keyframes for the rotation animation. Each keyframe specifies the transform property with the current angle.
- *
- * An options object is created with the duration set to 7000 milliseconds, fill set to 'forwards', and easing set to 'ease-in-out'.
- *
- * The function creates an animation using the `animate` method on the `canvasWheel.canvas` element, passing in the keyframes and options.
- *
- * An `onfinish` callback is assigned to the animation. This callback is executed when the animation finishes. Inside the callback, the `isRotating` flag is set to false, the `lastAngle` is updated to the current angle modulo 360, and the `transform` style of the `canvasWheel.canvas` element is set to the rotated angle.
- *
- * Finally, a custom event called "rotated" is dispatched with the index and sector details as the event details.
- */
+    /**
+     * Handles the click event on the wheel.
+     *
+     * This function is called when the user clicks on the wheel. It checks if the wheel is already rotating and returns early if it is. Otherwise, it sets the `isRotating` flag to true and generates a random angle within the range of 1000 to 2000.
+     *
+     * The function then creates an array of keyframes for the rotation animation. Each keyframe specifies the transform property with the current angle.
+     *
+     * An options object is created with the duration set to 7000 milliseconds, fill set to 'forwards', and easing set to 'ease-in-out'.
+     *
+     * The function creates an animation using the `animate` method on the `canvasWheel.canvas` element, passing in the keyframes and options.
+     *
+     * An `onfinish` callback is assigned to the animation. This callback is executed when the animation finishes. Inside the callback, the `isRotating` flag is set to false, the `lastAngle` is updated to the current angle modulo 360, and the `transform` style of the `canvasWheel.canvas` element is set to the rotated angle.
+     *
+     * Finally, a custom event called "rotated" is dispatched with the index and sector details as the event details.
+     */
     eventClickWheel() {
         if (this.isRotating) return;
 
@@ -188,7 +188,7 @@ const sectors = [
     "350",
     "600",
     "+",
-    "Б",
+    "B",
     "700",
     "600",
     "x2",
@@ -210,7 +210,7 @@ const sectors = [
     "x2",
     "600",
     "500",
-    "П",
+    "P",
     "600",
     "350",
     "300",
@@ -218,7 +218,7 @@ const sectors = [
     "500",
     "600",
     "400",
-    "Б",
+    "B",
     "500",
     "350",
     "600",

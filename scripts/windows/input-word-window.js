@@ -1,20 +1,44 @@
-import {Window} from "./window.js";
-import {HtmlTemplates} from "../templates.js"
+import { Window } from "./window.js";
+import { HtmlTemplates } from "../templates.js"
+import { Timer } from "../timer.js";
 
 export class InputWordWindow extends Window {
-    constructor(window, word) {
+    constructor(window, wordLetterElements, superGame = false) {
         super(window);
 
-        this.word = word;
+        this.wordLetterElements = wordLetterElements;
         this.inputs = window.querySelector("div#word-inputs");
         this.closeButton = window.querySelector("button#input-close-button");
         this.answerButton = window.querySelector("button#input-answer-button");
+        this.timerText = window.querySelector("#timer");
+        this.timerT = window.querySelector("#timer-text");
+
+        this.superGame = superGame;
 
         this.inputs.innerHTML = '';
         this.answerButton.disabled = true;
 
         this.createInputs();
         this.inputs.firstChild.focus();
+
+        if (this.superGame) {
+            this.timer = new Timer();
+
+            this.timer.start(60);
+            this.timerT.classList.remove("hidden");
+
+            this.timerText.innerText = this.timer.timeRemaining;
+
+            this.timer.addEventListener("tick", () => {
+                this.timerText.innerText = this.timer.timeRemaining;
+            });
+
+            this.closeButton.style.display = "none";
+        } else {
+            this.timerT.classList.add("hidden");
+
+            this.closeButton.style.display = "block";
+        }
     }
 
     getWord() {
@@ -28,8 +52,14 @@ export class InputWordWindow extends Window {
     }
 
     createInputs() {
-        for (const letter of this.word) {
+        for (const worldLetterElement of this.wordLetterElements) {
             const input = HtmlTemplates.getInputLetterElement();
+
+            if (worldLetterElement.observer.isOpened) {
+                input.value = worldLetterElement.observer.letter;
+
+                input.readOnly = true;
+            }
 
             input.addEventListener('keyup', (e) => {
                 let wrap = input.closest("div#word-inputs");
@@ -49,11 +79,16 @@ export class InputWordWindow extends Window {
 
                 // Backspace
                 if (e.key === "Backspace" || e.key === "Delete") {
-                    input.value = '';
-
-                    if (index - 1 >= 0) {
-                        inputs[index - 1].focus();
+                    if (!inputs[index].readOnly) {
+                        input.value = '';
                     }
+
+                    do {
+                        index--;
+                    } while (index > 0 && inputs[index].readOnly);
+
+                    if (index >= 0)
+                        inputs[index].focus();
 
                     return false;
                 }
@@ -63,10 +98,12 @@ export class InputWordWindow extends Window {
                     return false;
                 }
 
+                do {
+                    index++;
+                } while (index < inputs.length && inputs[index].readOnly);
 
-                if (index + 1 < inputs.length) {
-                    inputs[index + 1].focus();
-                }
+                if (index < inputs.length)
+                    inputs[index].focus();
             });
 
             this.inputs.appendChild(input);

@@ -1,4 +1,4 @@
-import {Player} from "./player.js";
+import { Player } from "./player.js";
 
 export class Bot extends Player {
     constructor(name) {

@@ -1,7 +1,8 @@
-import {sleep, removeAllChildrenFromElement} from "../general.js";
-import {tasks} from "../task-manager.js";
-import {HtmlTemplates} from "../templates.js";
-import {Global} from "../general.js";
+import { sleep, removeAllChildrenFromElement } from "../general.js";
+import { tasks } from "../task-manager.js";
+import { HtmlTemplates } from "../templates.js";
+import { Global } from "../general.js";
+import { localization } from "../localization.js";
 
 const Round = {
     FIRST: 0,
@@ -36,31 +37,30 @@ export class Task {
     }
 
     async typeLeadingText(text) {
-        return await this.typeText(this.leading, translateString(text));
+        return await this.typeText(this.leading, localization.translateString(text));
     }
 
     async typeTaskText() {
-        console.log(this.currentTask);
         return await this.typeText(this.task, this.currentTask.task);
     }
 
     setTextRound(currentRound) {
         switch (currentRound) {
             case Round.FIRST:
-                this.titleRound.textContent = translateString("{{game.firstRound}}");
+                this.titleRound.textContent = localization.translateString("{{game.firstRound}}");
                 break;
             case Round.SECOND:
-                this.titleRound.textContent = translateString("{{game.secondRound}}");
+                this.titleRound.textContent = localization.translateString("{{game.secondRound}}");
                 break;
             case Round.THIRD:
-                this.titleRound.textContent = translateString("{{game.thirdRound}}");
+                this.titleRound.textContent = localization.translateString("{{game.thirdRound}}");
                 break;
             case Round.FINAL:
-                this.titleRound.textContent = translateString("{{game.final}}");
+                this.titleRound.textContent = localization.translateString("{{game.final}}");
                 break;
 
             case Round.SUPER_GAME:
-                this.titleRound.textContent = translateString("{{game.superGame}}");
+                this.titleRound.textContent = localization.translateString("{{game.superGame}}");
                 break;
         }
     }
@@ -110,7 +110,7 @@ export class Task {
     selectTasks() {
         const taskIndexes = [];
 
-        while (taskIndexes.length < 4) {
+        while (taskIndexes.length < 5) {
             const index = Math.floor(Math.random() * tasks.length);
 
             if (!taskIndexes.includes(index))

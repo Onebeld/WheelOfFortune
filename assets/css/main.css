@@ -20,7 +20,7 @@
     --onebeld-font-size-main: 18px;
 
     --onebeld-border-radius: 8pt;
-    --onebeld-block-background-color: rgba(16, 32, 34, 0.77);
+    --onebeld-block-background-color: rgba(16, 32, 34, 0.83);
     --onebeld-block-letter-background-color: rgba(29, 61, 65, 0.77);
 }
 
@@ -63,8 +63,6 @@ body {
     text-align: center;
 }
 
-
-
 #task {
     text-align: center;
     margin: 10px 0 0;
@@ -91,24 +89,53 @@ body {
 
 .game-menu {
     position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    top: 10px;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: center;
-    gap: 10px;
     transition: transform 300ms ease-in-out;
 }
 
+.game-menu-container {
+    display: flex;
+    align-self: center;
+    flex-direction: column;
+    gap: 10px;
+}
+
 .game-menu.hidden {
-    transform: translateY(-100%);
+    transform: translateY(-105%);
     pointer-events: none;
     opacity: 1;
 }
 
+.game-menu-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-right: 50px;
+    margin-left: 50px;
+}
+
+.game-menu-icon {
+    margin-top: 70px;
+    margin-right: 110px;
+    margin-left: 110px;
+}
+
+.game-menu-copyright {
+    text-align: center;
+    margin: 5px 0 0;
+    color: var(--onebeld-color-secondary);
+    font-size: 10pt;
+}
+
+.title-game {
+    font-size: 48px;
+}
 
 .hidden {
     opacity: 0;
@@ -214,14 +241,12 @@ input.input-word-letter:focus {
     /* Center */
     top: 5px;
     right: 5px;
+    padding: 5px 10px;
 }
 
 #input-word-title{
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
     text-align: center;
+    margin: 20px 0 0;
 }
 
 #word-inputs {
@@ -238,10 +263,22 @@ input.input-word-letter:focus {
 
 #input-answer-button {
     position: absolute;
-    bottom: 35px;
+    bottom: 30px;
     left: 0;
     right: 0;
     justify-self: center;
+    font-size: 16px;
+}
+
+.input-word-timer {
+    position: absolute;
+    bottom: 50px;
+    left: 0;
+    right: 0;
+    text-align: center;
+}
+.input-word-timer.hidden {
+    display: none;
 }
 
 /* ########################## */
@@ -329,6 +366,34 @@ input.input-word-letter:focus {
 
     /* Vertical center */
     line-height: 20px;
+}
+
+button {
+    border: 1px solid #354b37;
+    background-color: rgba(29, 61, 65, 0.77);
+    border-radius: 50px;
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 5px 20px;
+    font-family: var(--onebeld-font-family-header);
+}
+button:hover {
+    background-color: rgba(36, 77, 82, 0.77);
+}
+button:active {
+    background-color: rgba(27, 56, 60, 0.77);
+}
+button:disabled {
+    opacity: 0.5;
+}
+button:hover:disabled {
+    background-color: rgba(29, 61, 65, 0.77);
+    cursor: auto;
+}
+button:active:disabled {
+    background-color: rgba(29, 61, 65, 0.77);
+    cursor: auto;
 }
 
 /* ########################## */

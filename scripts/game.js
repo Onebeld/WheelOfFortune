@@ -3,20 +3,19 @@ import {Letters} from "./letters.js";
 import {HtmlTemplates} from "./templates.js";
 import {tasks} from "./task-manager.js";
 import {Task} from "./elements/task.js";
-
 import {Player} from "./players/player.js";
 import {Bot} from "./players/bot.js";
-import {sleep} from "./general.js";
-import {Global} from "./general.js";
+import {Global, sleep} from "./general.js";
 import {InputWordWindow} from "./windows/input-word-window.js";
+import {localization} from "./localization.js";
 
 const GameMode = { NO_BOTS: "no_bots", WITH_BOTS: "with_bots" };
+
 const Round = {
     FIRST: 0,
     SECOND: 1,
     THIRD: 2,
     FINAL: 3,
-
     SUPER_GAME: 5
 };
 
@@ -27,462 +26,537 @@ class Letter {
     }
 }
 
-let letters;
+class Game {
+    constructor() {
+        this.letters = (localization.browserLocale === "ru") ? Letters.RU : Letters.EN;
+        this.letterBlocks = [];
+        this.players = [];
+        this.winningPlayers = [];
+        this.canTurnWheel = false;
+        this.currentGameMode = GameMode.NO_BOTS;
+        this.currentPoints = 0;
+        this.currentSector = null;
+        this.inputWordWindow = null;
+        this.numberOfPlayers = 1;
 
-if (browserLocale === "ru")
-    letters = Letters.RU;
-else
-    letters = Letters.EN;
+        // For super game
+        this.selectedLettersSupergame = [];
+        this.supergameCountLetters = 0;
 
-const letterBoard = document.querySelector("#letters");
-const lettersContainer = document.querySelector(".letters-container");
-const playerBoard = document.querySelector("#players");
-const wheelOfFortune = document.querySelector("#wheel-of-fortune");
-const taskContainer = document.querySelector(".task-container");
+        this.setupElements();
+        this.addEventListeners();
+    }
 
-const wordWindow = document.querySelector("#word-window");
+    setupElements() {
+        this.letterBoard = document.querySelector("#letters");
+        this.lettersContainer = document.querySelector(".letters-container");
+        this.playerBoard = document.querySelector("#players");
+        this.wheelOfFortune = document.querySelector("#wheel-of-fortune");
+        this.taskContainer = document.querySelector(".task-container");
+        this.wordWindow = document.querySelector("#word-window");
+        this.nameWordButton = document.querySelector("#name-word-button");
+        this.gameMenu = document.querySelector(".game-menu");
+        this.startGameNobots = document.querySelector("#start-game-nobots");
+        this.startGameBots = document.querySelector("#start-game-bots");
 
-const nameWordButton = document.querySelector("#name-word-button");
+        this.task = new Task(this.taskContainer);
+    }
 
-const gameMenu = document.querySelector(".game-menu");
-const startGameNobots = document.querySelector("#start-game-nobots");
-const startGameBots = document.querySelector("#start-game-bots");
+    addEventListeners() {
+        this.nameWordButton.addEventListener("click", async () => this.openInputWindow());
 
-const maxPlayers = 3;
+        wheel.addEventListener("rotated", async (event) => {
+            const index = event.detail.index;
+            this.currentSector = event.detail.sector;
+            await this.eventRotatedWheel(index, this.currentSector);
+        });
 
-const task = new Task(taskContainer);
+        wheel.canvasWheel.canvas.addEventListener("click", () => {
+            this.nameWordButton.setAttribute("disabled", true);
+        });
 
-let letterBlocks = [];
-let wordLetterElements = [];
-let players = [];
+        this.startGameBots.addEventListener("click", async () => {
+            await this.startGame(GameMode.WITH_BOTS);
+            this.gameMenu.classList.add("hidden");
+        });
 
-let winningPlayers = [];
-let currentTasks = [];
+        this.startGameNobots.addEventListener("click", async () => {
+            await this.startGame(GameMode.NO_BOTS);
+            this.gameMenu.classList.add("hidden");
+        });
 
-let canTurnWheel = false;
-let currentGameMode = GameMode.NO_BOTS;
+        this.wordWindow.querySelector("button#input-close-button").addEventListener("click", () => this.closeInputWindow());
+        this.wordWindow.querySelector("button#input-answer-button").addEventListener("click", () => this.answerInputWindow());
+    }
 
-let currentPoints = 0;
-let currentSector;
+    openWindow(window) {
+        window.classList.remove("closed");
+        this.canTurnWheel = false;
+        this.turnWheel();
+    }
 
-let numberOfPlayers = 1;
+    closeWindow(window) {
+        window.classList.add("closed");
+        this.canTurnWheel = true;
+        this.turnWheel();
+    }
 
-function openWindow(window) {
-    window.classList.remove("closed");
+    createLetterBoard() {
+        for (const letter of this.letters) {
+            const letterObj = new Letter(letter);
+            const letterElement = HtmlTemplates.getLetterElement();
 
-    canTurnWheel = false;
-    turnWheel();
-}
+            const letterText = letterElement.querySelector(".letter");
+            const svg = letterElement.querySelector("svg");
 
-function closeWindow(window) {
-    window.classList.add("closed");
+            letterText.textContent = letterObj.letter;
 
-    canTurnWheel = true;
-    turnWheel();
-}
+            const observer = new Proxy(letterObj, {
+                set(target, prop, value) {
+                    if (prop === "isSelected") {
+                        target.isSelected = value;
+                        if (value) svg.classList.remove("hidden");
+                        else svg.classList.add("hidden");
+                        return true;
+                    }
+                    return false;
+                }
+            });
 
-function createLetterBoard() {
-    for (let i = 0; i < letters.length; i++) {
-        const letter = new Letter(letters[i]);
+            letterElement.addEventListener("click", () => {
+                if (observer.isSelected) return;
 
-        const letterElement = HtmlTemplates.getLetterElement();
-        const letterText = letterElement.querySelector(".letter");
-        const svg = letterElement.querySelector("svg");
+                if (Global.currentRound === Round.SUPER_GAME) {
+                    observer.isSelected = true;
 
-        letterText.textContent = letter.letter;
+                    this.selectedLettersSupergame.push(observer.letter);
 
-        const observer = new Proxy(letter, {
+                    if (this.selectedLettersSupergame.length === this.supergameCountLetters) {
+                        this.lettersContainer.classList.add("disabled");
+                        setTimeout(() => this.selectLetterSuperGame(), 500);
+                    }
+
+                    return;
+                }
+
+                this.lettersContainer.classList.add("disabled");
+                observer.isSelected = true;
+                setTimeout(() => this.selectLetter(observer.letter), 500);
+            });
+
+            this.letterBlocks.push({ letterElement, observer });
+            this.letterBoard.appendChild(letterElement);
+        }
+    }
+
+    createPlayer(player) {
+        const playerName = player.element.querySelector(".player-name");
+        const playerPoints = player.element.querySelector(".player-points");
+        const playerNumber = player.element.querySelector(".player-number");
+
+        playerName.textContent = player.name;
+        playerPoints.textContent = player.points.toString().padStart(5, "0");
+        playerNumber.textContent = player.number;
+
+        const observer = new Proxy(player, {
             set(target, prop, value) {
-                if (prop === "isSelected") {
-                    target.isSelected = value;
+                if (prop === "points") {
+                    target.points = value;
+                    playerPoints.textContent = value.toString().padStart(5, "0");
+                    return true;
+                }
+                if (prop === "canMove") {
+                    target.canMove = value;
 
                     if (value)
-                        svg.classList.remove("hidden");
+                        player.element.classList.add("can-move");
                     else
-                        svg.classList.add("hidden");
+                        player.element.classList.remove("can-move");
 
                     return true;
                 }
+                if (prop === "loses") {
+                    target.loses = value;
 
+                    if (value)
+                        player.element.classList.add("loses");
+                    else
+                        player.element.classList.remove("loses");
+
+                    return true;
+                }
                 return false;
             }
         });
 
-        letterElement.addEventListener("click", () => {
-            if (observer.isSelected) return;
-
-            lettersContainer.classList.add("disabled");
-            observer.isSelected = true;
-
-            setTimeout(() => { selectLetter(observer.letter); }, 500);
-        })
-
-        letterBlocks.push( { letterElement, observer } );
-
-        letterBoard.appendChild(letterElement);
+        this.players.push(observer);
+        this.playerBoard.appendChild(player.element);
     }
-}
 
-function createPlayer(player) {
-    const playerName = player.element.querySelector(".player-name");
-    const playerPoints = player.element.querySelector(".player-points");
-    const playerNumber = player.element.querySelector(".player-number");
-
-    playerName.textContent = player.name;
-    playerPoints.textContent = player.points.toString().padStart(5, "0");
-    playerNumber.textContent = player.number;
-
-    const observer = new Proxy(player, {
-        set(target, prop, value) {
-            if (prop === "points") {
-                target.points = value;
-                playerPoints.textContent = value.toString().padStart(5, "0");
-
-                return true;
-            }
-
-            if (prop === "canMove") {
-                target.canMove = value;
-
-                if (value) {
-                    player.element.classList.add("can-move");
-                } else {
-                    player.element.classList.remove("can-move");
+    createPlayerBoard() {
+        if (this.currentGameMode === GameMode.NO_BOTS) {
+            if (Global.currentRound === Round.FINAL || Global.currentRound === Round.SUPER_GAME) {
+                for (const winningPlayer of this.winningPlayers) {
+                    this.players.push(winningPlayer);
+                    this.playerBoard.appendChild(winningPlayer.element);
                 }
+                this.winningPlayers = [];
 
-                return true;
+                return;
             }
-
-            if (prop === "loses") {
-                target.loses = value;
-
-                if (value) {
-                    player.element.classList.add("loses");
-                } else {
-                    player.element.classList.remove("loses");
-                }
-
-                return true;
+            for (let i = 0; i < 3; i++) {
+                this.createPlayer(new Player("", this.numberOfPlayers++));
             }
-
-            return false;
-        }
-    });
-
-    players.push(observer);
-
-    playerBoard.appendChild(player.element);
-}
-
-function createPlayerBoard() {
-    if (currentGameMode === GameMode.NO_BOTS) {
-        if (Global.currentRound === Round.FINAL) {
-            for (const winningPlayer of winningPlayers) {
-                players.push(winningPlayer);
-                playerBoard.appendChild(winningPlayer.element);
+        } else {
+            this.createPlayer(new Player(`Player 1`, this.numberOfPlayers++));
+            for (let i = 1; i < 3; i++) {
+                this.createPlayer(new Bot("", this.numberOfPlayers++));
             }
-
-            winningPlayers = [];
-
-            return;
-        }
-
-        for (let i = 0; i < maxPlayers; i++) {
-            createPlayer(new Player("", numberOfPlayers++));
-        }
-    } else if (currentGameMode === GameMode.WITH_BOTS) {
-        createPlayer(new Player(`Player 1`, numberOfPlayers++));
-
-        for (let i = 1; i < maxPlayers; i++) {
-            createPlayer(new Bot("", numberOfPlayers++));
         }
     }
-}
 
-function selectLetter(letter) {
-    lettersContainer.classList.remove("opened");
-
-    const player = players[Global.currentPlayer];
-
-    setTimeout(async () => {
+    async selectLetter(letter) {
+        this.lettersContainer.classList.remove("opened");
+        const player = this.players[Global.currentPlayer];
         let hasLetter = false;
 
-        if (task.wordLetterElements.some(wordElement => wordElement.observer.letter === letter)) {
-            await task.typeLeadingText(`{{game.leading.openLetter}}${letter}!`);
+        await sleep(400);
 
-            await sleep(1000);
+        if (this.task.wordLetterElements.some(wordElement => wordElement.observer.letter === letter)) {
+            await this.task.typeLeadingText(`{{game.leading.openLetter}}${letter}!`);
+            await sleep(500);
         }
 
-        for (const wordLetterElement of wordLetterElements) {
+        for (const wordLetterElement of this.task.wordLetterElements) {
             if (wordLetterElement.observer.letter === letter) {
                 wordLetterElement.observer.isOpened = true;
                 hasLetter = true;
 
-                if (currentSector === "x2") {
-                    player.points *= 2;
-                }
-                else {
-                    player.points += currentPoints;
-                }
+                player.points += (this.currentSector === "x2") ? player.points : this.currentPoints;
 
                 await sleep(400);
             }
         }
 
         if (!hasLetter) {
-            // TODO: Message about wrong letter
-            await task.typeLeadingText("{{game.leading.noLetter}}");
-
-            await sleep(1500);
-
-            await nextMove();
+            await this.task.typeLeadingText("{{game.leading.noLetter}}");
+            await sleep(1000);
+            await this.nextMove();
 
             return;
         }
 
         await sleep(400);
-
-        if (wordLetterElements.every(wordElement => wordElement.observer.isOpened)) {
-            // TODO: Winning
-            winningPlayers.push(player);
-            await nextRound();
+        if (this.task.wordLetterElements.every(wordElement => wordElement.observer.isOpened)) {
+            this.winningPlayers.push(player);
+            await this.nextRound();
 
             return;
         }
 
-        await task.typeLeadingText(`${players[Global.currentPlayer].name}{{game.leading.spinWheel}}`);
+        this.task.typeLeadingText(`${player.name}{{game.leading.spinWheel}}`);
 
-        canTurnWheel = true;
-        turnWheel();
-    }, 500);
-}
-
-async function sayWord(word) {
-    if (task.currentTask.word !== word) {
-        await task.typeLeadingText(`{{game.leading.wrongWord}}`);
-        await sleep(500);
-
-        players[Global.currentPlayer].loses = true;
+        this.canTurnWheel = true;
+        this.turnWheel();
     }
-}
 
-async function beginSelectingLetter(player, points) {
-    currentPoints = points;
+    async selectLetterSuperGame() {
+        this.lettersContainer.classList.remove("opened");
 
-    // TODO: Select letter
-    if (typeof player !== Bot) {
-        lettersContainer.classList.remove("disabled");
-        lettersContainer.classList.add("opened");
+        await sleep(400);
 
-        canTurnWheel = false;
-        turnWheel();
+        await this.task.typeLeadingText(`{{game.leading.openLettersIfExist}}`);
+
+        for (const letter of this.task.wordLetterElements) {
+            if (this.selectedLettersSupergame.includes(letter.observer.letter)) {
+                letter.observer.isOpened = true;
+                await sleep(400);
+            }
+        }
+
+        await sleep(400);
+
+        await this.task.typeLeadingText(`{{game.leading.minute}}`);
+
+        this.inputWordWindow = new InputWordWindow(this.wordWindow, this.task.wordLetterElements, true);
+        this.inputWordWindow.timer.addEventListener("end", async () => {
+            this.closeWindow(this.wordWindow);
+            this.inputWordWindow.timer = null;
+
+            await sleep(400);
+
+            await this.task.typeLeadingText(`{{game.leading.timesUp}}`);
+            await sleep(2000);
+
+            this.endGame();
+        })
+
+        this.openWindow(this.wordWindow);
     }
-    else {
-        const move = player.makeMove();
 
+    async sayWord(word) {
+        if (Global.currentRound === Round.SUPER_GAME) {
+            if (this.task.currentTask.word !== word) {
+                await this.task.typeLeadingText(`{{game.leading.wrongWordSuperGame}}`);
+                
+                await sleep(2000);
+                this.endGame();
 
+                return;
+            }
+
+            await this.task.typeLeadingText(`{{game.leading.yes}}`);
+
+            await sleep(400);
+
+            for (const wordLetterElement of this.task.wordLetterElements) {
+                wordLetterElement.observer.isOpened = true;
+                await sleep(400);
+            }
+
+            await this.task.typeLeadingText(`{{game.leading.winner}}`);
+
+            await sleep(2000);
+
+            this.endGame();
+
+            return;
+        }
+
+        if (this.task.currentTask.word !== word) {
+            await this.task.typeLeadingText(`{{game.leading.wrongWord}}`);
+            await sleep(500);
+            this.players[Global.currentPlayer].loses = true;
+            this.nextMove();
+            return;
+        }
+
+        await this.task.typeLeadingText(`{{game.leading.yes}}`);
+
+        await sleep(400);
+
+        for (const wordLetterElement of this.task.wordLetterElements) {
+            wordLetterElement.observer.isOpened = true;
+            await sleep(400);
+        }
+
+        this.nextRound();
     }
-}
 
-function turnWheel() {
-    if (canTurnWheel)
-        wheelOfFortune.classList.remove("disabled");
-    else
-        wheelOfFortune.classList.add("disabled");
-}
-
-async function nextMove() {
-    if (Global.currentPlayer >= 0)
-        players[Global.currentPlayer].canMove = false;
-
-    do {
-        if (Global.currentPlayer >= players.length - 1)
-            Global.currentPlayer = 0;
-        else
-            Global.currentPlayer++;
-    } while (players[Global.currentPlayer].loses);
-
-    players[Global.currentPlayer].canMove = true;
-
-    task.typeLeadingText(`${players[Global.currentPlayer].name}{{game.leading.spinWheel}}`);
-
-    if (typeof players[Global.currentPlayer] !== Bot) {
-        canTurnWheel = true;
-        turnWheel();
-    }
-    else {
-        await sleep(500);
-        wheel.rotate();
-    }
-}
-
-function selectTasks() {
-    const taskIndexes = [];
-
-    while (taskIndexes.length < 4) {
-        const index = Math.floor(Math.random() * tasks.length);
-
-        if (!taskIndexes.includes(index)) {
-            taskIndexes.push(index);
+    async beginSelectingLetter(player, points) {
+        this.currentPoints = points;
+        if (!(player instanceof Bot)) {
+            this.lettersContainer.classList.remove("disabled");
+            this.lettersContainer.classList.add("opened");
+            this.canTurnWheel = false;
+            this.turnWheel();
+        } else {
+            player.makeMove();
         }
     }
 
-    currentTasks = taskIndexes.map(index => tasks[index]);
-}
-
-async function nextRound() {
-    const player = players[Global.currentPlayer];
-
-    if (Global.currentRound === Round.FINAL)
-        await task.typeLeadingText(`{{game.leading.winning}}`);
-    else
-        await task.typeLeadingText(`{{game.leading.winning}} ${player.name}{{game.leading.nextRound}}`);
-
-    await sleep(2000);
-
-    player.canMove = false;
-
-    clearGame();
-
-    if (currentGameMode === GameMode.NO_BOTS) {
-        switch (Global.currentRound) {
-            case Round.FIRST:
-            case Round.SECOND:
-            case Round.THIRD:
-                Global.currentRound++;
-                break;
-
-            case Round.FINAL:
-                Global.currentRound = Round.SUPER_GAME;
-                break;
-        }
-    }
-    else {
-        switch (Global.currentRound) {
-            case Round.FIRST:
-                Global.currentRound = Round.FINAL;
-                break;
-            case Round.FINAL:
-                Global.currentRound = Round.SUPER_GAME;
-                break;
+    turnWheel() {
+        if (this.canTurnWheel) {
+            this.nameWordButton.removeAttribute("disabled");
+            this.wheelOfFortune.classList.remove("disabled");
+        } else {
+            this.nameWordButton.setAttribute("disabled", true);
+            this.wheelOfFortune.classList.add("disabled");
         }
     }
 
-    task.nextRound();
+    async nextMove() {
+        if (Global.currentPlayer >= 0)
+            this.players[Global.currentPlayer].canMove = false;
 
-    createLetterBoard();
-    createPlayerBoard();
+        const playersIsEmpty = this.players.every(lose => lose.loses)
 
-    if (Global.currentRound === Round.SUPER_GAME) {
-        // TODO: Super game
-        await task.typeLeadingText(`{{game.superGame}}!`);
+        if (playersIsEmpty && Global.currentRound === Round.FINAL) {
+            await this.task.typeLeadingText(`{{game.leading.noPlayersFinal}}`);
+            await sleep(2000);
+
+            this.endGame();
+
+            return;
+        }
+
+        if (playersIsEmpty) {
+            await this.task.typeLeadingText(`{{game.leading.noPlayers}}`);
+
+            await this.nextRound();
+
+            return;
+        }
+
+        do {
+            Global.currentPlayer = (Global.currentPlayer >= this.players.length - 1) ? 0 : Global.currentPlayer + 1;
+        } while (this.players[Global.currentPlayer].loses);
+
+        this.players[Global.currentPlayer].canMove = true;
+        this.task.typeLeadingText(`${this.players[Global.currentPlayer].name}{{game.leading.spinWheel}}`);
+
+        if (!(this.players[Global.currentPlayer] instanceof Bot)) {
+            this.canTurnWheel = true;
+            this.turnWheel();
+        } else {
+            await sleep(500);
+            wheel.rotate();
+        }
+    }
+
+    selectTasks() {
+        const taskIndexes = [];
+        while (taskIndexes.length < 4) {
+            const index = Math.floor(Math.random() * tasks.length);
+            if (!taskIndexes.includes(index)) taskIndexes.push(index);
+        }
+        this.currentTasks = taskIndexes.map(index => tasks[index]);
+    }
+
+    async nextRound() {
+        let player;
+
+        if (!this.players.every(lose => lose.loses)) {
+            player = this.players[Global.currentPlayer];
+
+            if (Global.currentRound === Round.FINAL) {
+                await this.task.typeLeadingText(`{{game.leading.winning}}`);
+            } else {
+                await this.task.typeLeadingText(`{{game.leading.winning}} ${player.name}{{game.leading.nextRound}}`);
+            }
+        }
 
         await sleep(2000);
 
-        await task.typeLeadingText(`{{game.superGame}}!`);
+        if (player !== undefined)
+        {
+            player.canMove = false;
+            this.winningPlayers.push(player);
+        }
+
+        this.clearGame();
+
+        if (this.currentGameMode === GameMode.NO_BOTS) {
+            Global.currentRound = (Global.currentRound === Round.FINAL) ? Round.SUPER_GAME : Global.currentRound + 1;
+        } else {
+            Global.currentRound = (Global.currentRound === Round.FINAL) ? Round.SUPER_GAME : Round.FINAL;
+        }
+
+        this.task.nextRound();
+        this.createLetterBoard();
+        this.createPlayerBoard();
+
+        if (Global.currentRound === Round.SUPER_GAME) {
+            this.task.task.innerText = "";
+            this.startSuperGame();
+        } else {
+            setTimeout(() => this.task.typeTaskText(), 500);
+            await this.nextMove();
+        }
     }
-    else {
-        setTimeout(() => task.typeTaskText(), 500);
-        await nextMove();
+
+    async startGame(gameMode) {
+        this.currentGameMode = gameMode;
+        Global.currentRound = Round.FIRST;
+        this.task.beginNewGame();
+        this.createLetterBoard();
+        this.createPlayerBoard();
+        setTimeout(() => this.task.typeTaskText(), 500);
+        await this.nextMove();
     }
 
-    // TODO: Finish round
-}
-
-async function startGame(gameMode) {
-    currentGameMode = gameMode;
-    Global.currentRound = Round.FIRST;
-
-    task.beginNewGame();
-
-    createLetterBoard();
-    createPlayerBoard();
-
-    setTimeout(() => task.typeTaskText(), 500);
-    await nextMove();
-}
-
-function removeAllChildrenFromElement(element) {
-    while (element.firstChild)
-        element.removeChild(element.firstChild);
-}
-
-function clearGame() {
-    players = [];
-    letterBlocks = [];
-    Global.currentPlayer = -1;
-
-    task.clear();
-    removeAllChildrenFromElement(playerBoard);
-    removeAllChildrenFromElement(letterBoard);
-}
-
-async function eventRotatedWheel(index, sector) {
-    const player = players[Global.currentPlayer];
-
-    switch (sector) {
-        case "0":
-            await task.typeLeadingText(`{{game.leading.zero}}`);
-            await sleep(1000);
-
-            await nextMove();
-            break;
-        case "Б":
-            player.points = 0;
-
-            await task.typeLeadingText(`{{game.leading.bankrupt}}`);
-            await sleep(1000);
-
-            await nextMove();
-
-            break;
-        case "+":
-            await task.typeLeadingText(`{{game.leading.plus}}`);
-
-            break;
-        case "П":
-            await task.typeLeadingText(`{{game.leading.prize}}`);
-            break;
-
-        default:
-            task.typeLeadingText(`${sector} {{game.leading.points}}`);
-            await beginSelectingLetter(player, parseInt(sector));
-
-            break;
+    endGame() {
+        this.clearGame();
+        this.winningPlayers = [];
+        this.gameMenu.classList.remove("hidden");
     }
-}
 
-nameWordButton.addEventListener("click", async () => {
-    const inputWordWindow = new InputWordWindow(wordWindow, task.currentTask.word);
-    openWindow(wordWindow);
+    async startSuperGame() {
+        await this.task.typeLeadingText(`{{game.superGame}}!`);
+        await sleep(1000);
 
-    inputWordWindow.closeButton.addEventListener("click", () => {
-        closeWindow(wordWindow);
-    });
+        this.task.typeLeadingText(`{{game.leading.superGame}}`);
+        await this.task.typeTaskText();
 
-    inputWordWindow.answerButton.addEventListener("click", async () => {
-        closeWindow(wordWindow);
+        await sleep(400);
 
+        const guessableLetters = this.calculateGuessableLetters(this.task.currentTask.word);
+        this.supergameCountLetters = guessableLetters;
+
+        this.task.typeLeadingText(`{{game.leading.anyLetter}} ${guessableLetters}`);
+
+        this.lettersContainer.classList.remove("disabled");
+        this.lettersContainer.classList.add("opened");
+    }
+
+    calculateGuessableLetters(word) {
+        const totalLetters = word.length;
+
+        return Math.floor(totalLetters * 0.45);
+    }
+
+    removeAllChildrenFromElement(element) {
+        while (element.firstChild) element.removeChild(element.firstChild);
+    }
+
+    clearGame() {
+        this.players = [];
+        this.letterBlocks = [];
+        Global.currentPlayer = -1;
+        this.task.clear();
+        this.removeAllChildrenFromElement(this.playerBoard);
+        this.removeAllChildrenFromElement(this.letterBoard);
+    }
+
+    async eventRotatedWheel(index, sector) {
+        const player = this.players[Global.currentPlayer];
+        switch (sector) {
+            case "0":
+                await this.task.typeLeadingText(`{{game.leading.zero}}`);
+                await sleep(1000);
+                await this.nextMove();
+                break;
+            case "B":
+                player.points = 0;
+                await this.task.typeLeadingText(`{{game.leading.bankrupt}}`);
+                await sleep(1000);
+                await this.nextMove();
+                break;
+            case "+":
+                await this.task.typeLeadingText(`{{game.leading.plus}}`);
+                break;
+            case "P":
+                await this.task.typeLeadingText(`{{game.leading.prize}}`);
+                break;
+            default:
+                this.task.typeLeadingText(`${sector} {{game.leading.points}}`);
+                await this.beginSelectingLetter(player, parseInt(sector));
+                break;
+        }
+    }
+
+    closeInputWindow() {
+        this.closeWindow(this.wordWindow);
+    }
+
+    async answerInputWindow() {
+        this.closeWindow(this.wordWindow);
         await sleep(300);
-        sayWord(inputWordWindow.getWord());
-    });
-})
 
-wheel.addEventListener("rotated", async (event) => {
-    const index = event.detail.index;
-    currentSector = event.detail.sector;
+        if (this.inputWordWindow.timer !== undefined) {
+            this.inputWordWindow.timer.stop();
+            this.inputWordWindow.timer = null;
+        }
 
-    await eventRotatedWheel(index, currentSector);
-});
+        this.sayWord(this.inputWordWindow.getWord());
+    }
 
-startGameBots.addEventListener("click", async () => {
-    await startGame(GameMode.WITH_BOTS);
+    openInputWindow() {
+        this.inputWordWindow = new InputWordWindow(this.wordWindow, this.task.wordLetterElements);
+        this.openWindow(this.wordWindow);
+    }
+}
 
-    gameMenu.classList.add("hidden");
-});
-
-startGameNobots.addEventListener("click", async () => {
-    await startGame(GameMode.NO_BOTS);
-
-    gameMenu.classList.add("hidden");
+document.addEventListener("DOMContentLoaded", () => {
+    new Game();
 });

@@ -1,5 +1,7 @@
-export class Window {
+export class Window extends EventTarget {
     constructor(window) {
+        super();
+
         this.element = window;
     }
 

@@ -25,6 +25,14 @@
   "game.leading.prize": "Сектор Приз! Откройте одну из двух шкатулок",
   "game.leading.superGame": "Вот задание на супер игру",
   "game.leading.anyLetter": "Разрешаю Вам открыть буквы любые ",
+  "game.leading.openLettersIfExist": "Открыть буквы, если они есть",
+  "game.leading.minute": "Минута... пошла!",
+  "game.leading.noPlayers": "Похоже, больше никого не осталось",
+  "game.leading.timesUp": "Вы не успели назвать слово. Игра окончена!",
+  "game.leading.noPlayersFinal": "У нас нет игроков в финале. Игра окончена!",
+  "game.leading.winner": "Поздравляем! Вы победили в игре!",
 
-  "game.leading.wrongWord": "К сожалению, неверное слово. Вы выбываете из игры!"
+  "game.leading.wrongWord": "К сожалению, неверное слово. Вы выбываете из игры!",
+  "game.leading.wrongWordSuperGame": "К сожалению, неверное слово. Игра окончена!",
+  "game.leading.yes": "Точно!"
 }

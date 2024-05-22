@@ -1,3 +1,5 @@
+import { localization } from "./localization.js";
+
 const TASKS_PATH = "assets/localization/tasks/";
 
 export let tasks = [];
@@ -14,5 +16,5 @@ async function fetchTasks(locale) {
 }
 
 (async function init() {
-    tasks = await fetchTasks(locale);
+    tasks = await fetchTasks(localization.locale);
 })()

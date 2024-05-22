@@ -1,5 +1,5 @@
-import {HtmlTemplates} from "../templates.js";
-import {generateName} from "../name-generator.js";
+import { HtmlTemplates } from "../templates.js";
+import { generateName } from "../name-generator.js";
 
 export class Player {
     constructor(name, number) {
