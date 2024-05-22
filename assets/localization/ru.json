@@ -5,6 +5,9 @@
   "game.selectLetter": "Выберите букву",
   "game.nameWord": "Назвать слово",
   "game.name": "Назвать",
+  "game.answer": "Дать ответ",
+  "game.time": "Оставшееся время:",
+  "game.typeWord": "Введите слово",
 
   "game.firstRound": "1-й раунд",
   "game.secondRound": "2-й раунд",
@@ -31,8 +34,14 @@
   "game.leading.timesUp": "Вы не успели назвать слово. Игра окончена!",
   "game.leading.noPlayersFinal": "У нас нет игроков в финале. Игра окончена!",
   "game.leading.winner": "Поздравляем! Вы победили в игре!",
+  "game.leading.botLoses": "К сожалению, вы проиграли. Игра окончена!",
+  "game.leading.prizeNotReceived": "Вы не получили приз!",
+  "game.leading.prizeReceived": "Поздравляем! Вы получили 1500 очков!",
+  "game.leading.selectLetter": "Выберите букву",
 
   "game.leading.wrongWord": "К сожалению, неверное слово. Вы выбываете из игры!",
   "game.leading.wrongWordSuperGame": "К сожалению, неверное слово. Игра окончена!",
-  "game.leading.yes": "Точно!"
+  "game.leading.yes": "Точно!",
+
+  "game.copyright": "Авторское право ©2024 Onebeld (Дмитрий Жутков)"
 }

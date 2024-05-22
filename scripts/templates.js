@@ -28,6 +28,10 @@ export class HtmlTemplates {
     static getPlayerElement() {
         const template = `
             <div class="card player-card">
+                <div class="player-answer hidden">
+                    <p class="player-answer-text"></p>
+                </div>
+                
                 <h3 class="player-name">Player 1</h3>
                 
                 <div class="card player-image">

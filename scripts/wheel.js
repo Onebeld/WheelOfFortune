@@ -168,7 +168,7 @@ class Wheel extends EventTarget{
      * Rotates the wheel.
      */
     rotate() {
-        this.eventClickWheel.bind(this);
+        this.eventClickWheel();
     }
 
     /**

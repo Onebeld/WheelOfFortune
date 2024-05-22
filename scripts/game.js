@@ -1,7 +1,6 @@
 import {wheel} from "./wheel.js";
 import {Letters} from "./letters.js";
 import {HtmlTemplates} from "./templates.js";
-import {tasks} from "./task-manager.js";
 import {Task} from "./elements/task.js";
 import {Player} from "./players/player.js";
 import {Bot} from "./players/bot.js";
@@ -208,6 +207,22 @@ class Game {
                 this.createPlayer(new Player("", this.numberOfPlayers++));
             }
         } else {
+            if (Global.currentRound === Round.FINAL || Global.currentRound === Round.SUPER_GAME) {
+                for (const winningPlayer of this.winningPlayers) {
+                    this.players.push(winningPlayer);
+                    this.playerBoard.appendChild(winningPlayer.element);
+                }
+                this.winningPlayers = [];
+
+                if (Global.currentRound === Round.FINAL) {
+                    for (let i = 1; i < 3; i++) {
+                        this.createPlayer(new Bot("", this.numberOfPlayers++));
+                    }
+                }
+
+                return;
+            }
+
             this.createPlayer(new Player(`Player 1`, this.numberOfPlayers++));
             for (let i = 1; i < 3; i++) {
                 this.createPlayer(new Bot("", this.numberOfPlayers++));
@@ -256,8 +271,23 @@ class Game {
 
         this.task.typeLeadingText(`${player.name}{{game.leading.spinWheel}}`);
 
-        this.canTurnWheel = true;
-        this.turnWheel();
+        if (!(this.players[Global.currentPlayer] instanceof Bot)) {
+            this.canTurnWheel = true;
+            this.turnWheel();
+        } else {
+            await sleep(500);
+
+            const openedLetters = this.task.wordLetterElements.filter(wordLetterElement => wordLetterElement.observer.isOpened).length;
+            const wordLength = this.task.currentTask.word.length;
+
+            let answer = this.players[Global.currentPlayer].makeMove(openedLetters, wordLength);
+
+            if (answer === "word") {
+                this.botAnswerWord();
+            } else {
+                wheel.rotate();
+            }
+        }
     }
 
     async selectLetterSuperGame() {
@@ -351,7 +381,66 @@ class Game {
             this.canTurnWheel = false;
             this.turnWheel();
         } else {
-            player.makeMove();
+            this.botAnswerLetter();
+        }
+    }
+
+    async botAnswerWord() {
+        await sleep(400);
+
+        this.players[Global.currentPlayer].element.querySelector(".player-answer-text").innerText = this.task.currentTask.word;
+        this.players[Global.currentPlayer].element.querySelector(".player-answer").classList.remove("hidden");
+
+        await sleep(3000);
+
+        this.players[Global.currentPlayer].element.querySelector(".player-answer").classList.add("hidden");
+
+        await sleep(500);
+
+        this.sayWord(this.task.currentTask.word);
+    }
+
+    async botAnswerLetter() {
+        await sleep(700);
+
+        const lettersCount = this.letterBlocks.length;
+
+        while (true) {
+            let letter;
+
+            if (Math.random() < 0.4) {
+                while (true) {
+                    const randomLetter = this.task.wordLetterElements[Math.floor(Math.random() * this.task.wordLetterElements.length)];
+
+                    if (randomLetter.observer.isOpened) {
+                        continue;
+                    }
+
+                    letter = this.letterBlocks.find(letter => letter.observer.letter === randomLetter.observer.letter);
+                    break;
+                }
+            }
+            else {
+                const randomIndex = Math.floor(Math.random() * lettersCount);
+
+                letter = this.letterBlocks[randomIndex];
+            }
+
+            if (!letter.observer.isSelected) {
+                letter.observer.isSelected = true;
+
+                this.players[Global.currentPlayer].element.querySelector(".player-answer-text").innerText = letter.observer.letter;
+                this.players[Global.currentPlayer].element.querySelector(".player-answer").classList.remove("hidden");
+
+                await sleep(3000);
+
+                this.players[Global.currentPlayer].element.querySelector(".player-answer").classList.add("hidden");
+
+                await sleep(500);
+
+                this.selectLetter(letter.observer.letter);
+                break;
+            }
         }
     }
 
@@ -400,17 +489,18 @@ class Game {
             this.turnWheel();
         } else {
             await sleep(500);
-            wheel.rotate();
-        }
-    }
 
-    selectTasks() {
-        const taskIndexes = [];
-        while (taskIndexes.length < 4) {
-            const index = Math.floor(Math.random() * tasks.length);
-            if (!taskIndexes.includes(index)) taskIndexes.push(index);
+            const openedLetters = this.task.wordLetterElements.filter(wordLetterElement => wordLetterElement.observer.isOpened).length;
+            const wordLength = this.task.currentTask.word.length;
+
+            let answer = this.players[Global.currentPlayer].makeMove(openedLetters, wordLength);
+
+            if (answer === "word") {
+                this.botAnswerWord();
+            } else {
+                wheel.rotate();
+            }
         }
-        this.currentTasks = taskIndexes.map(index => tasks[index]);
     }
 
     async nextRound() {
@@ -430,6 +520,15 @@ class Game {
 
         if (player !== undefined)
         {
+            if (player instanceof Bot) {
+                await this.task.typeLeadingText(`{{game.leading.botLoses}}`);
+
+                await sleep(2000);
+
+                this.endGame();
+                return;
+            }
+
             player.canMove = false;
             this.winningPlayers.push(player);
         }
@@ -489,6 +588,42 @@ class Game {
         this.lettersContainer.classList.add("opened");
     }
 
+    async prize() {
+        const player = this.players[Global.currentPlayer];
+
+        if (player instanceof Bot) {
+            await sleep(500);
+
+            if (Math.random() < 0.5) {
+                await this.task.typeLeadingText("{{game.leading.prizeNotReceived}}");
+            } else {
+                await this.task.typeLeadingText("{{game.leading.prizeReceived}}");
+
+                player.points += 1500;
+            }
+
+            await sleep(1000);
+
+            await this.task.typeLeadingText("{{game.leading.selectLetter}}");
+
+            await sleep(400);
+
+            this.botAnswerLetter();
+        } else {
+
+        }
+    }
+
+    plus() {
+        const player = this.players[Global.currentPlayer];
+
+        if (player instanceof Bot) {
+
+        } else {
+
+        }
+    }
+
     calculateGuessableLetters(word) {
         const totalLetters = word.length;
 
@@ -524,9 +659,11 @@ class Game {
                 break;
             case "+":
                 await this.task.typeLeadingText(`{{game.leading.plus}}`);
+                this.plus();
                 break;
             case "P":
                 await this.task.typeLeadingText(`{{game.leading.prize}}`);
+                this.prize();
                 break;
             default:
                 this.task.typeLeadingText(`${sector} {{game.leading.points}}`);

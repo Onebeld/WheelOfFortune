@@ -1,10 +1,47 @@
 {
+  "game.start": "Start game",
+  "game.startWithBots": "Start game with bots",
+
   "game.selectLetter": "Pick a letter",
+  "game.nameWord": "Name a word",
+  "game.name": "Name",
+  "game.answer": "Answer",
+  "game.time": "Time left:",
+  "game.typeWord": "Type the word",
 
   "game.firstRound": "1st round",
   "game.secondRound": "2nd round",
   "game.thirdRound": "3rd round",
-  "game.fourthRound": "4th round",
+  "game.final": "Final",
 
-  "game.superGame": "Super game"
+  "game.superGame": "Super game",
+
+  "game.leading.points": "points, letter?",
+  "game.leading.spinWheel": ", spin the wheel",
+  "game.leading.noLetter": "There is no such letter here!",
+  "game.leading.openLetter": "Open letter ",
+  "game.leading.bankrupt": "You are bankrupt!",
+  "game.leading.zero": "You have zero!",
+  "game.leading.plus": "Sector Plus! You can open any letter in the word!",
+  "game.leading.winning": "We have a winner!",
+  "game.leading.nextRound": ", you can go to the final!",
+  "game.leading.prize": "Sector Prize! Open one of the two boxes",
+  "game.leading.superGame": "Here's the assignment for the super game",
+  "game.leading.anyLetter": "I allow you to open any ",
+  "game.leading.openLettersIfExist": "Open letters if they exist",
+  "game.leading.minute": "Minute... go!",
+  "game.leading.noPlayers": "Looks like there are no players left",
+  "game.leading.timesUp": "You didn't name the word. Game over!",
+  "game.leading.noPlayersFinal": "There are no players in the final. Game over!",
+  "game.leading.winner": "Congratulations! You won the game!",
+  "game.leading.botLoses": "Sorry, you lose. Game over!",
+  "game.leading.prizeNotReceived": "You didn't get the prize!",
+  "game.leading.prizeReceived": "Congratulations! You received 1500 points!",
+  "game.leading.selectLetter": "Pick a letter",
+
+  "game.leading.wrongWord": "Sorry, that's not the correct word. You leave the game!",
+  "game.leading.wrongWordSuperGame": "Sorry, that's not the correct word. Game over!",
+  "game.leading.yes": "Yes!",
+
+  "game.copyright": "Copyright ©2024 Onebeld (Dmitry Zhukov)"
 }
