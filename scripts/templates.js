@@ -90,4 +90,21 @@ export class HtmlTemplates {
 
         return this.createElementFromHTML(template);
     }
+
+    static getPriseBoxElement() {
+        const template = `
+         <div class="prise-box card">
+            <div class="prise-hidden">
+                <span class="material-symbols-rounded md-48">
+                    question_mark
+                </span>
+            </div>
+
+            <div class="prise-open">
+            </div>
+         </div>
+        `;
+
+        return this.createElementFromHTML(template);
+    }
 }

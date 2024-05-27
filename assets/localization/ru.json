@@ -36,7 +36,7 @@
   "game.leading.winner": "Поздравляем! Вы победили в игре!",
   "game.leading.botLoses": "К сожалению, вы проиграли. Игра окончена!",
   "game.leading.prizeNotReceived": "Вы не получили приз!",
-  "game.leading.prizeReceived": "Поздравляем! Вы получили 1500 очков!",
+  "game.leading.prizeReceived": "Поздравляем! Вы получили 5000 очков!",
   "game.leading.selectLetter": "Выберите букву",
 
   "game.leading.wrongWord": "К сожалению, неверное слово. Вы выбываете из игры!",

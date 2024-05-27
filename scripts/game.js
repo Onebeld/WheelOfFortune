@@ -7,6 +7,7 @@ import {Bot} from "./players/bot.js";
 import {Global, sleep} from "./general.js";
 import {InputWordWindow} from "./windows/input-word-window.js";
 import {localization} from "./localization.js";
+import {PriseWindow} from "./windows/prise-window.js";
 
 const GameMode = { NO_BOTS: "no_bots", WITH_BOTS: "with_bots" };
 
@@ -34,7 +35,6 @@ class Game {
         this.canTurnWheel = false;
         this.currentGameMode = GameMode.NO_BOTS;
         this.currentPoints = 0;
-        this.currentSector = null;
         this.inputWordWindow = null;
         this.numberOfPlayers = 1;
 
@@ -57,6 +57,7 @@ class Game {
         this.gameMenu = document.querySelector(".game-menu");
         this.startGameNobots = document.querySelector("#start-game-nobots");
         this.startGameBots = document.querySelector("#start-game-bots");
+        this.priseWindow = document.querySelector("#prise-window");
 
         this.task = new Task(this.taskContainer);
     }
@@ -66,8 +67,8 @@ class Game {
 
         wheel.addEventListener("rotated", async (event) => {
             const index = event.detail.index;
-            this.currentSector = event.detail.sector;
-            await this.eventRotatedWheel(index, this.currentSector);
+            Global.currentSector = event.detail.sector;
+            await this.eventRotatedWheel(index, Global.currentSector);
         });
 
         wheel.canvasWheel.canvas.addEventListener("click", () => {
@@ -247,7 +248,8 @@ class Game {
                 wordLetterElement.observer.isOpened = true;
                 hasLetter = true;
 
-                player.points += (this.currentSector === "x2") ? player.points : this.currentPoints;
+                if (Global.currentSector !== "P")
+                    player.points += (Global.currentSector === "x2") ? player.points : this.currentPoints;
 
                 await sleep(400);
             }
@@ -591,6 +593,9 @@ class Game {
     async prize() {
         const player = this.players[Global.currentPlayer];
 
+        this.canTurnWheel = false;
+        this.turnWheel();
+
         if (player instanceof Bot) {
             await sleep(500);
 
@@ -610,17 +615,44 @@ class Game {
 
             this.botAnswerLetter();
         } else {
+            this.task.typeLeadingText("{{game.leading.prizeNotReceived}}");
 
+            const priseWindow = new PriseWindow(this.priseWindow);
+            priseWindow.addEventListener("prise-opened", async (e) => {
+                if (e.detail.isWin) {
+                    player.points += 5000;
+                    await this.task.typeLeadingText("{{game.leading.prizeReceived}}");
+                }
+                else {
+                    await this.task.typeLeadingText("{{game.leading.prizeNotReceived}}");
+                }
+
+                await sleep(2000);
+
+                this.closeWindow(this.priseWindow);
+
+                this.task.typeLeadingText("{{game.leading.selectLetter}}");
+
+                this.beginSelectingLetter(player);
+            });
         }
     }
 
     plus() {
         const player = this.players[Global.currentPlayer];
 
+        this.canTurnWheel = false;
+        this.turnWheel();
+
         if (player instanceof Bot) {
+            let randomLetter;
 
+            do {
+                randomLetter = this.task.wordLetterElements[Math.floor(Math.random() * this.task.wordLetterElements.length)];
+            } while (!randomLetter.observer.isOpened);
+
+            this.selectLetter(randomLetter.observer.letter);
         } else {
-
         }
     }
 
@@ -645,6 +677,7 @@ class Game {
 
     async eventRotatedWheel(index, sector) {
         const player = this.players[Global.currentPlayer];
+
         switch (sector) {
             case "0":
                 await this.task.typeLeadingText(`{{game.leading.zero}}`);

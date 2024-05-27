@@ -5,6 +5,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<title>Wheel Of Fortune</title>
 		<link rel="stylesheet" href="assets/css/main.css">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0"/>
 
 		<script src="scripts/localization.js"></script>
 	</head>
@@ -43,6 +44,15 @@
 			<p class="input-word-timer hidden" id="timer-text"><span translate="game.time"></span> <span id="timer"></span></p>
 
 			<button id="input-answer-button" translate="game.answer"></button>
+		</div>
+
+		<div id="prise-window" class="card window closed">
+			<h2 id="prise-title">Выберите коробку!</h2>
+
+			<div id="prises">
+			</div>
+
+			<p id="prise-text">К сожалению, нет приза!</p>
 		</div>
 
 		<div class="game-menu card">
